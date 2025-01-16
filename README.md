@@ -18,3 +18,11 @@ To run it do
 in the build folder
 
 Tested with external MIDI synth ONLY.
+
+### Dependencies you might need
+
+* libflac-dev
+* libvorbis-dev
+* libopenal-dev
+* libopenal1
+* libudev-dev
