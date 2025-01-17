@@ -9,5 +9,5 @@ clean:
 	rm -rf build
 
 install-deps:
-	sudo apt-get install libflac-dev libvorbis-dev libopenal-dev libopenal1 libudev-dev
+	sudo apt-get install libflac-dev libvorbis-dev libopenal-dev libopenal1 libudev-dev libx11-dev 
        
