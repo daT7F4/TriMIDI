@@ -26,3 +26,4 @@ Tested with external MIDI synth ONLY.
 * libopenal-dev
 * libopenal1
 * libudev-dev
+* libx11-dev
