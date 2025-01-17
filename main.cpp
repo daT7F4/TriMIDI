@@ -160,7 +160,7 @@ int main()
 
   vector<string> files;
 
-  for (const auto &entry : fs::directory_iterator("./../"))
+  for (const auto &entry : fs::directory_iterator("."))
   {
     if (entry.is_regular_file())
     {
@@ -254,7 +254,7 @@ int main()
     select.display();
   }
 
-  ifstream file("./../" + files[selectedFile], ios::binary);
+  ifstream file(files[selectedFile], ios::binary);
 
   if (!file.is_open())
   {
