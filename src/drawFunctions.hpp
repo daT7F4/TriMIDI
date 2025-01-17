@@ -10,7 +10,7 @@ Font font;
 
 void initFont()
 {
-  font.loadFromFile("./../Doto-VariableFont_ROND,wght.ttf");
+  font.loadFromFile("./../src/Doto-VariableFont_ROND,wght.ttf");
 }
 
 Text drawText(int x, int y, int size, string t, Color color, bool centerAllign)
