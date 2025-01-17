@@ -15,6 +15,11 @@ To run it do
 ```
 in the root folder
 
+To clean it up do
+```
+make clean .
+```
+
 Tested with external MIDI synth ONLY.
 
 ### Dependencies you might need
