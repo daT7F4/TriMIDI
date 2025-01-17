@@ -193,7 +193,7 @@ int main()
 
     bool startHover = false, exitHover = false;
 
-    if (m.x > 590 && m.x < 790 && m.y > 10 && m.y < 40)
+    if (m.x > 590 && m.x < 790 && m.y > 10 && m.y < 40 && (files.size() > 0 && MIDIDevices.size() > 0))
     {
       startHover = true;
       if (Mouse::isButtonPressed(sf::Mouse::Left))
@@ -213,29 +213,35 @@ int main()
 
     select.draw(drawRect(5, 90, 790, 1, Color::White));
     select.draw(drawText(5, 5, 80, "TriMIDI", Color::White, 1));
-    select.draw(drawText(330, 5, 20, "v.1.0", Color::White, 1));
+    select.draw(drawText(330, 5, 20, "v.1.0.1", Color::White, 1));
 
-    select.draw(drawRect(590, 10, 200, 30, Color(0, 100 + (startHover * 50), 0)));
+    select.draw(drawRect(590, 10, 200, 30, Color(0, 100 + (startHover * 50) - ((files.size() == 0 || MIDIDevices.size() == 0) * 50), 0)));
     select.draw(drawRect(590, 50, 200, 30, Color(100 + (exitHover * 50), 0, 0)));
 
     select.draw(drawText(690, 15, 15, "Start", Color::White, 0));
     select.draw(drawText(690, 55, 15, "Exit", Color::White, 0));
 
-    for (int i = 0; i < files.size(); i++)
+    if (files.size() > 0)
     {
-      bool hover = false;
-      if (m.x > 40 && m.x < 390 && m.y > i * 21 + 100 && m.y < i * 21 + 120)
+      for (int i = 0; i < files.size(); i++)
       {
-        hover = true;
-        if (Mouse::isButtonPressed(sf::Mouse::Left))
+        bool hover = false;
+        if (m.x > 40 && m.x < 390 && m.y > i * 21 + 100 && m.y < i * 21 + 120)
         {
-          selectedFile = i;
+          hover = true;
+          if (Mouse::isButtonPressed(sf::Mouse::Left))
+          {
+            selectedFile = i;
+          }
         }
+        select.draw(drawRect(40, i * 21 + 100, 350, 20, Color(0, 0, 127 + (hover * 50) + ((i == selectedFile) * 70))));
+        select.draw(drawText(40, i * 21 + 100, 18, files[i], Color::White, 1));
       }
-      select.draw(drawRect(40, i * 21 + 100, 350, 20, Color(0, 0, 127 + (hover * 50) + ((i == selectedFile) * 70))));
-      select.draw(drawText(40, i * 21 + 100, 18, files[i], Color::White, 1));
+    } else{
+      select.draw(drawText(215, 120, 20, "No MIDI Files Found", Color::White, 0));
     }
 
+    if(MIDIDevices.size() > 0){
     for (int i = 0; i < MIDIDevices.size(); i++)
     {
       bool hover = false;
@@ -249,6 +255,9 @@ int main()
       }
       select.draw(drawRect(400, i * 21 + 100, 350, 20, Color(0, 0, 127 + (hover * 50) + ((i == selectedDevice) * 70))));
       select.draw(drawText(400, i * 21 + 100, 18, MIDIDevices[i], Color::White, 1));
+    }
+    } else{
+      select.draw(drawText(575, 120, 20, "No MIDI Devices Found", Color::White, 0));
     }
 
     select.display();
@@ -390,7 +399,7 @@ int main()
 
     MIDITime += ((Tempo * PPQN) / 60) * (1.0 / fps);
 
-    while (notes[noteIndex][0] < MIDITime)
+    while (notes[noteIndex][0] < MIDITime && noteIndex < notes.size() - 1)
     {
       uint32_t value = notes[noteIndex][1];
       uint8_t byte1 = (value >> 24) & 0xFF;
@@ -409,6 +418,9 @@ int main()
       }
       noteIndex++;
     }
+
+    if (noteIndex == notes.size())
+      window.close();
 
     while (meta[metaIndex][0] < MIDITime && metaIndex < meta.size() - 1)
     {
