@@ -31,7 +31,6 @@ target_link_libraries(main PRIVATE
     sfml-window 
     sfml-graphics 
     sfml-network 
-    sfml-audio 
 )
 
 # Link RtMidi library
