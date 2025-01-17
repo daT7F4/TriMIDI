@@ -8,8 +8,8 @@ All the midi files should be in the same directory as the "main.cpp" file.
 
 To compile it do these commands from the root directory
 ```
-make install-deps .
-make build .
+make install-deps
+make build
 ```
 To run it do
 ```
@@ -32,3 +32,6 @@ Tested with external MIDI synth ONLY.
 * libopenal1
 * libudev-dev
 * libx11-dev
+* libxrandr-dev
+* libxcursor-dev
+* libfreetype6-dev
