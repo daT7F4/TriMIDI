@@ -3,7 +3,7 @@
 all: build
 
 build:
-	mkdir build && cd build && cmake .. && cmake --build .
+	mkdir build && cd build && cmake .. && cmake --build . -j8
 
 clean:
 	rm -rf build
