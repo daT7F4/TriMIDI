@@ -2,8 +2,10 @@
 MIDI Player in SFML
 
 # How to use
-Download the .zip and extract
-All the midi files should be in the same directory as the "main.cpp" file
+Download the .zip and extract.
+
+All the midi files should be in the same directory as the "main.cpp" file.
+
 To compile it do these commands from the root directory
 ```
 make install-deps .
