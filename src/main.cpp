@@ -215,7 +215,7 @@ int main()
     select.display();
   }
 
-  ifstream file(files[selectedFile], ios::binary);
+  ifstream file("./midi_files/" + files[selectedFile], ios::binary);
 
   if (!file.is_open())
   {

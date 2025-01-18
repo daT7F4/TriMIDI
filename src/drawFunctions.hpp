@@ -11,7 +11,7 @@ Sprite grid, grid2, play, stop, marker, midi;
 
 void initFont()
 {
-  font.loadFromFile("./src/Doto-VariableFont_ROND,wght.ttf");
+  font.loadFromFile("./assets/Doto-VariableFont_ROND,wght.ttf");
 }
 
 Text drawText(int x, int y, int size, string t, Color color, bool centerAllign)
@@ -56,7 +56,7 @@ RectangleShape drawRect(int x, int y, int w, int h, Color color)
 }
 
 void loadSprites(){
-  if (!texture.loadFromFile("./textures/grid.png"))
+  if (!texture.loadFromFile("./assets/texture.png"))
   {
     cerr << "Failed to load texture" << endl;
   }
