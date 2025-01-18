@@ -4,9 +4,9 @@ MIDI Player in SFML
 # How to use
 Download the .zip and extract.
 
-All the midi files should be in the same directory as the "main.cpp" file.
+All the midi files should be in the "midi_files" directory which is created when building.
 
-To compile and build it do these commands from the root directory
+To compile and build it do these commands from the root directory.
 ```
 make install-deps
 make build
@@ -15,7 +15,6 @@ To run it do
 ```
 make run
 ```
-in the root folder
 
 To clean it up do
 ```
@@ -29,7 +28,7 @@ If you want to just compile the changed files do
 make sb
 ```
 
-### Dependencies you might need
+### Dependencies you might need (will be installed using the make command)
 
 * libflac-dev
 * libvorbis-dev
