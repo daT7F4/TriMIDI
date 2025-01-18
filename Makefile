@@ -3,7 +3,7 @@
 all: build
 
 build:
-	mkdir build && mkdir midi_files && cd build && cmake .. && cmake --build . -j8
+	mkdir build && mkdir -p midi_files && cd build && cmake .. && cmake --build . -j8
 
 sb:
 	cmake --build ./build -j8
