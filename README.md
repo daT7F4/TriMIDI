@@ -6,17 +6,16 @@ Download the .zip and extract.
 
 All the midi files should be in the "midi_files" directory which is created when building.
 
-To compile and build it do these commands from the root directory.
+To compile and build it run this command from root.
 ```
-make install-deps
 make build
 ```
-To run it do
+To run the compiled program do
 ```
 make run
 ```
 
-To clean it up do
+To remove the build do
 ```
 make clean
 ```
@@ -28,7 +27,12 @@ If you want to just compile the changed files do
 make sb
 ```
 
-### Dependencies you might need (will be installed using the make command)
+### Dependencies you might need
+
+Automatic installation can be done using the command
+```
+make install-deps
+```
 
 * libflac-dev
 * libvorbis-dev
