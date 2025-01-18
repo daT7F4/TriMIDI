@@ -1,16 +1,17 @@
 #include <SFML/Graphics.hpp>
 #include <string>
+#include <vector>
 
 using namespace std;
 using namespace sf;
 
-int keys[12] = {0,3,1,3,2,0,3,1,3,1,3,2}; // 0 right white, 1 center white, 2, left white, 3 black 
-
 Font font;
+Texture texture;
+Sprite grid, grid2, play, stop, marker, midi;
 
 void initFont()
 {
-  font.loadFromFile("./../src/Doto-VariableFont_ROND,wght.ttf");
+  font.loadFromFile("./src/Doto-VariableFont_ROND,wght.ttf");
 }
 
 Text drawText(int x, int y, int size, string t, Color color, bool centerAllign)
@@ -53,3 +54,27 @@ RectangleShape drawRect(int x, int y, int w, int h, Color color)
   rect.setFillColor(color);
   return rect;
 }
+
+void loadSprites(){
+  if (!texture.loadFromFile("./textures/grid.png"))
+  {
+    cerr << "Failed to load texture" << endl;
+  }
+  grid.setTexture(texture);
+  grid.setTextureRect(IntRect(0, 0, 769, 97));
+  play.setTexture(texture);
+  play.setTextureRect(IntRect(0, 98, 11, 11));
+  stop.setTexture(texture);
+  stop.setTextureRect(IntRect(12, 98, 11, 11));
+  marker.setTexture(texture);
+  marker.setTextureRect(IntRect(24, 98, 7, 11));
+  midi.setTexture(texture);
+  midi.setTextureRect(IntRect(32, 98, 9, 9));
+}
+
+Sprite drawSprite(Sprite &sprite, int x, int y, float scale){
+  sprite.setPosition(Vector2f(x, y));
+  sprite.setScale(Vector2f(scale, scale));
+  return sprite;
+}
+
