@@ -3,7 +3,13 @@
 all: build
 
 build:
-	mkdir build && cd build && cmake .. && cmake --build . -j8
+	mkdir build && mkdir midi_files && cd build && cmake .. && cmake --build . -j8
+
+sb:
+	cmake --build ./build -j8
+
+run:
+	./build/main
 
 clean:
 	rm -rf build
