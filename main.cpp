@@ -159,7 +159,7 @@ int main()
 
     select.draw(drawRect(5, 90, 790, 1, Color::White));
     select.draw(drawText(5, 5, 80, "TriMIDI", Color::White, 1));
-    select.draw(drawText(330, 5, 20, "v.1.0.1", Color::White, 1));
+    select.draw(drawText(330, 5, 20, "v.1.3", Color::White, 1));
 
     select.draw(drawRect(590, 10, 200, 30, Color(0, 100 + (startHover * 50) - ((files.size() == 0 || MIDIDevices.size() == 0 || selectedDevice == -1 || selectedFile == -1) * 50), 0)));
     select.draw(drawRect(590, 50, 200, 30, Color(100 + (exitHover * 50), 0, 0)));
