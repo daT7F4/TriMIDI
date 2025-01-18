@@ -6,23 +6,28 @@ Download the .zip and extract.
 
 All the midi files should be in the same directory as the "main.cpp" file.
 
-To compile it do these commands from the root directory
+To compile and build it do these commands from the root directory
 ```
 make install-deps
 make build
 ```
 To run it do
 ```
-./build/main
+make run
 ```
 in the root folder
 
 To clean it up do
 ```
-make clean .
+make clean
 ```
 
 Tested with external MIDI synth ONLY.
+
+If you want to just compile the changed files do
+```
+make sb
+```
 
 ### Dependencies you might need
 
