@@ -5,6 +5,8 @@
 using namespace std;
 using namespace sf;
 
+int keys[12] = {0,3,1,3,2,0,3,1,3,1,3,2}; // 0 right white, 1 center white, 2, left white, 3 black 
+
 Font font;
 Texture texture;
 Sprite grid, grid2, play, stop, marker, midi;
