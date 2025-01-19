@@ -7,7 +7,7 @@ using namespace sf;
 
 Font font;
 Texture texture;
-Sprite grid, grid2, play, stop, marker, midi;
+Sprite grid, grid2, play, stop, marker, midi, speed;
 
 void initFont()
 {
@@ -25,7 +25,7 @@ Text drawText(int x, int y, int size, string t, Color color, bool centerAllign)
   if (centerAllign)
     text.setPosition(Vector2f(x, y));
   else
-    text.setPosition(Vector2f(x - (bounds.width / 2), y));
+    text.setPosition(Vector2f(x - ((int)bounds.width / 2), y));
   return text;
 }
 
@@ -70,6 +70,8 @@ void loadSprites(){
   marker.setTextureRect(IntRect(24, 98, 7, 11));
   midi.setTexture(texture);
   midi.setTextureRect(IntRect(32, 98, 9, 9));
+  speed.setTexture(texture);
+  speed.setTextureRect(IntRect(42, 98, 93, 11));
 }
 
 Sprite drawSprite(Sprite &sprite, int x, int y, float scale){

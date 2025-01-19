@@ -105,13 +105,9 @@ int main()
       getDelta();
       trackTime += delta;
       if (MD[rI] == 0xFF)
-      { // meta event
         getMeta();
-      }
       else
-      {
         getEvent();
-      }
       if (report)
         return 1;
     }

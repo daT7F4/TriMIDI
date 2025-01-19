@@ -250,8 +250,16 @@ int displayPlayerScreen()
     else
       window.draw(drawSprite(stop, 10, 155, 2));
 
+    play.setColor(sf::Color(255, 255, 255));
+    stop.setColor(sf::Color(255, 255, 255));
+
     if (m.x > 10 && m.x < 30 && m.y > 150 && m.y < 170)
     {
+      if(playing)
+        play.setColor(sf::Color(160, 160, 160));
+      else
+        stop.setColor(sf::Color(160, 160, 160));
+
       if (Mouse::isButtonPressed(sf::Mouse::Left) && !playT)
       {
         playing = !playing;
@@ -260,6 +268,8 @@ int displayPlayerScreen()
       if (!Mouse::isButtonPressed(sf::Mouse::Left))
         playT = false;
     }
+
+    window.draw(drawSprite(speed, 40, 155, 2));
 
     window.display();
 
