@@ -38,6 +38,7 @@ void listMidiDevices()
   try
   {
     RtMidiOut midiOut;
+    MIDIDevices.clear();
 
     // List output devices
     cout << "\nMIDI Output Devices:" << endl;
