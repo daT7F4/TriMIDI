@@ -9,7 +9,7 @@ sb:
 	cmake --build ./build -j8
 
 run:
-	./build/main
+	./build/TriMIDI
 
 clean:
 	rm -rf build
