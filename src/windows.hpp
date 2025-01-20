@@ -18,8 +18,8 @@ uint64_t MIDITime;
 uint64_t lastMIDITime;
 bool activeNotes[16][128];
 
-int selectedFile = -1;
-int selectedDevice = -1;
+int selectedFile;
+int selectedDevice;
 
 bool seekT = false;
 bool playT = false;
@@ -47,6 +47,7 @@ Color midiColors[16] = {
 };
 
 float speeds[8] = {0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2};
+string speedNames[8] = {"0.25x", "0.5x", "0.75x", "1x", "1.25x", "1.5x", "1.75x", "2x"};
 int speedX[9] = {62, 84, 106, 128, 150, 172, 194, 216, 800};
 int speedIndex = 3;
 
@@ -78,6 +79,8 @@ void updateSystem()
 
 int displaySelectionScreen()
 {
+  selectedFile = -1;
+  selectedDevice = -1;
 
   ContextSettings settings;
   settings.antialiasingLevel = 0;
@@ -207,7 +210,7 @@ int displayPlayerScreen()
     window.draw(drawRect(5, 5, 780, 125, Color(15, 15, 15)));
     window.draw(drawSprite(grid, 10, 10, 1));
 
-    window.draw(drawText(10, 105, 16, to_string(Tempo) + " BPM", Color::White, 1));
+    window.draw(drawText(10, 105, 16, to_string((int)Tempo) + " BPM (" + to_string(Tempo * speeds[speedIndex]) + ")", Color::White, 1));
     window.draw(drawRect(5, 135, 780, 10, Color(60, 60, 60)));
     int x = ((float)step * (float)MIDITime) + 5;
     window.draw(drawSprite(marker, x - 3, 135, 1));
@@ -274,6 +277,7 @@ int displayPlayerScreen()
     }
 
     window.draw(drawSprite(speed, 40, 155, 2));
+    window.draw(drawText(40, 180, 16, speedNames[speedIndex], Color::White, 1));
     x = (speedIndex * 20) + 63;
     window.draw(drawCircle(x, 166, 5, Color::Red));
     if(m.x > 40 && m.x < 226 && m.y > 155 && m.y < 177){
@@ -288,10 +292,20 @@ int displayPlayerScreen()
       } 
     }
 
+    bool backHover = false;
+    if(m.x > 5 && m.x < 205 && m.y > 565 && m.y < 695){
+      backHover = true;
+      if(Mouse::isButtonPressed(Mouse::Left)){
+        return 1;
+      }
+    }
+    window.draw(drawRect(5, 565, 200, 30, Color(100 + (backHover * 50), 0, 0)));
+    window.draw(drawText(105, 570, 16, "Back", Color::White, 0));
+
     window.display();
 
     if (playing)
-      MIDITime += (((float)Tempo * (float)PPQN) / 60.0) * (1.0 / 60.0);
+      MIDITime += (((float)Tempo * (float)PPQN) / 60.0) * (1.0 / 60.0) * speeds[speedIndex];
 
     while (notes[noteIndex][0] < MIDITime && noteIndex < notes.size() - 1)
     {

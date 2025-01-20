@@ -43,99 +43,102 @@ int main()
     }
   }
 
-  if(displaySelectionScreen() == 0)
-    return 0;
-
-  ifstream file("./midi_files/" + files[selectedFile], ios::binary);
-
-  if (!file.is_open())
+  while (true)
   {
-    cerr << "Error: Could not open file.\n";
-    return 1;
-  }
 
-  char byte;
-  while (file.get(byte))
-  {
-    MD.push_back(static_cast<u8>(byte));
-  }
+    if (displaySelectionScreen() == 0)
+      return 0;
 
-  file.close();
+    ifstream file("./midi_files/" + files[selectedFile], ios::binary);
 
-  // check header
-  for (rI = 0; rI < 8; rI++)
-  {
-    if (MD[rI] != header[rI])
+    if (!file.is_open())
     {
-      cerr << "Invalid header" << endl;
-      cerr << "Expected 0x" << hex << uppercase << header[rI] << endl;
-      cerr << "Got 0x" << hex << uppercase << MD[rI] << endl;
+      cerr << "Error: Could not open file.\n";
       return 1;
     }
-  }
-  rI += 2;
-  trackCount = eight2sixteen(MD[rI], MD[rI + 1]);
-  cout << "Track count: " << trackCount << endl;
-  rI += 2;
-  PPQN = eight2sixteen(MD[rI], MD[rI + 1]);
-  cout << "PPQN: " << PPQN << endl;
-  rI += 2;
 
-  for (int track = 0; track < trackCount; track++)
-  {
-    for (int i = 0; i < 4; i++)
+    char byte;
+    while (file.get(byte))
     {
-      if (MD[rI + i] != trackHeader[i])
+      MD.push_back(static_cast<u8>(byte));
+    }
+
+    file.close();
+
+    // check header
+    for (rI = 0; rI < 8; rI++)
+    {
+      if (MD[rI] != header[rI])
       {
-        cerr << "Invalid track header at 0x" << hex << uppercase << rI + i << endl;
-        cerr << "Expected 0x" << hex << uppercase << trackHeader[i] << endl;
-        cerr << "Got 0x" << hex << MD[rI + i] << endl;
+        cerr << "Invalid header" << endl;
+        cerr << "Expected 0x" << hex << uppercase << header[rI] << endl;
+        cerr << "Got 0x" << hex << uppercase << MD[rI] << endl;
         return 1;
       }
     }
-    rI += 4;
-    u32 trackLenght =
-        eight2thirtytwo(MD[rI], MD[rI + 1], MD[rI + 2], MD[rI + 3]);
-    cout << "Track #" << track << " size: " << trackLenght << " Bytes" << endl;
-    rI += 4;
-    uint64_t end = rI + trackLenght;
-    trackTime = 0;
-    while (rI < end)
+    rI += 2;
+    trackCount = eight2sixteen(MD[rI], MD[rI + 1]);
+    cout << "Track count: " << trackCount << endl;
+    rI += 2;
+    PPQN = eight2sixteen(MD[rI], MD[rI + 1]);
+    cout << "PPQN: " << PPQN << endl;
+    rI += 2;
+
+    for (int track = 0; track < trackCount; track++)
     {
-      getDelta();
-      trackTime += delta;
-      if (MD[rI] == 0xFF)
-        getMeta();
-      else
-        getEvent();
-      if (report)
-        return 1;
+      for (int i = 0; i < 4; i++)
+      {
+        if (MD[rI + i] != trackHeader[i])
+        {
+          cerr << "Invalid track header at 0x" << hex << uppercase << rI + i << endl;
+          cerr << "Expected 0x" << hex << uppercase << trackHeader[i] << endl;
+          cerr << "Got 0x" << hex << MD[rI + i] << endl;
+          return 1;
+        }
+      }
+      rI += 4;
+      u32 trackLenght =
+          eight2thirtytwo(MD[rI], MD[rI + 1], MD[rI + 2], MD[rI + 3]);
+      cout << "Track #" << track << " size: " << trackLenght << " Bytes" << endl;
+      rI += 4;
+      uint64_t end = rI + trackLenght;
+      trackTime = 0;
+      while (rI < end)
+      {
+        getDelta();
+        trackTime += delta;
+        if (MD[rI] == 0xFF)
+          getMeta();
+        else
+          getEvent();
+        if (report)
+          return 1;
+      }
     }
+
+    sort(notes.begin(), notes.end(), [](const vector<uint64_t> &a, const vector<uint64_t> &b)
+         { return a[0] < b[0]; });
+    sort(systemMessages.begin(), systemMessages.end(), [](const vector<uint64_t> &a, const vector<uint64_t> &b)
+         { return a[0] < b[0]; });
+    sort(meta.begin(), meta.end(), [](const vector<uint64_t> &a, const vector<uint64_t> &b)
+         { return a[0] < b[0]; });
+
+    cout << "Done decoding" << endl;
+    MD.clear();
+
+    unsigned int nPorts = midiOut.getPortCount();
+
+    midiOut.openPort(selectedDevice);
+
+    Tempo = 60000000.0 / meta[0][1];
+
+    if (displayPlayerScreen() == 0)
+      return 0;
+
+    stopAllNotes(midiOut);
+
+    midiOut.closePort();
   }
-
-  sort(notes.begin(), notes.end(), [](const vector<uint64_t> &a, const vector<uint64_t> &b)
-       { return a[0] < b[0]; });
-  sort(systemMessages.begin(), systemMessages.end(), [](const vector<uint64_t> &a, const vector<uint64_t> &b)
-       { return a[0] < b[0]; });
-  sort(meta.begin(), meta.end(), [](const vector<uint64_t> &a, const vector<uint64_t> &b)
-       { return a[0] < b[0]; });
-
-
-  cout << "Done decoding" << endl;
-  MD.clear();
-
-  unsigned int nPorts = midiOut.getPortCount();
-
-  midiOut.openPort(selectedDevice);
-
-  Tempo = 60000000.0 / meta[0][1];
-
-  if(displayPlayerScreen() == 0)
-    return 0;
-
-  stopAllNotes(midiOut);
-
-  midiOut.closePort();
 
   return 0;
 }
