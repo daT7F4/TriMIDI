@@ -48,7 +48,7 @@ Color midiColors[16] = {
 
 float speeds[8] = {0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2};
 string speedNames[8] = {"0.25x", "0.5x", "0.75x", "1x", "1.25x", "1.5x", "1.75x", "2x"};
-int speedX[9] = {62, 84, 106, 128, 150, 172, 194, 216, 800};
+int speedX[9] = {124, 168, 212, 256, 300, 344, 388, 432, 800};
 int speedIndex = 3;
 
 void updateNotes(bool reverse)
@@ -82,9 +82,7 @@ int displaySelectionScreen()
   selectedFile = -1;
   selectedDevice = -1;
 
-  ContextSettings settings;
-  settings.antialiasingLevel = 0;
-  RenderWindow select(sf::VideoMode(800, 600), "Selection Screen", Style::Default, settings);
+  RenderWindow select(sf::VideoMode(1600, 1000), "Selection Screen", Style::Titlebar);
   select.setFramerateLimit(60);
 
   listMidiDevices();
@@ -105,7 +103,7 @@ int displaySelectionScreen()
 
     bool startHover = false, exitHover = false;
 
-    if (m.x > 590 && m.x < 790 && m.y > 10 && m.y < 40 && (files.size() > 0 && MIDIDevices.size() > 0 && selectedDevice != -1 && selectedFile != -1))
+    if (m.x > 1180 && m.x < 1580 && m.y > 10 && m.y < 40 && (files.size() > 0 && MIDIDevices.size() > 0 && selectedDevice != -1 && selectedFile != -1))
     {
       startHover = true;
       if (Mouse::isButtonPressed(sf::Mouse::Left))
@@ -115,7 +113,7 @@ int displaySelectionScreen()
       }
     }
 
-    if (m.x > 590 && m.x < 790 && m.y > 50 && m.y < 80)
+    if (m.x > 1180 && m.x < 1580 && m.y > 50 && m.y < 80)
     {
       exitHover = true;
       if (Mouse::isButtonPressed(sf::Mouse::Left))
@@ -124,22 +122,22 @@ int displaySelectionScreen()
       }
     }
 
-    select.draw(drawRect(5, 90, 790, 1, Color::White));
+    select.draw(drawRect(5, 90, 1590, 1, Color::White));
     select.draw(drawText(5, 5, 80, "TriMIDI", Color::White, 1));
     select.draw(drawText(330, 5, 20, "v.1.3.2.1", Color::White, 1));
 
-    select.draw(drawRect(590, 10, 200, 30, Color(0, 100 + (startHover * 50) - ((files.size() == 0 || MIDIDevices.size() == 0 || selectedDevice == -1 || selectedFile == -1) * 50), 0)));
-    select.draw(drawRect(590, 50, 200, 30, Color(100 + (exitHover * 50), 0, 0)));
+    select.draw(drawRect(1190, 10, 400, 30, Color(0, 100 + (startHover * 50) - ((files.size() == 0 || MIDIDevices.size() == 0 || selectedDevice == -1 || selectedFile == -1) * 50), 0)));
+    select.draw(drawRect(1190, 50, 400, 30, Color(100 + (exitHover * 50), 0, 0)));
 
-    select.draw(drawText(690, 16, 16, "Start", Color::White, 0));
-    select.draw(drawText(690, 56, 16, "Exit", Color::White, 0));
+    select.draw(drawText(1390, 16, 16, "Start", Color::White, 0));
+    select.draw(drawText(1390, 56, 16, "Exit", Color::White, 0));
 
     if (files.size() > 0)
     {
       for (int i = 0; i < files.size(); i++)
       {
         bool hover = false;
-        if (m.x > 40 && m.x < 390 && m.y > i * 21 + 100 && m.y < i * 21 + 120)
+        if (m.x > 40 && m.x < 800 && m.y > i * 21 + 100 && m.y < i * 21 + 120)
         {
           hover = true;
           if (Mouse::isButtonPressed(sf::Mouse::Left))
@@ -147,13 +145,13 @@ int displaySelectionScreen()
             selectedFile = i;
           }
         }
-        select.draw(drawRect(40, i * 21 + 100, 350, 20, Color(0, 0, 127 + (hover * 50) + ((i == selectedFile) * 70))));
+        select.draw(drawRect(40, i * 21 + 100, 760, 20, Color(0, 0, 127 + (hover * 50) + ((i == selectedFile) * 70))));
         select.draw(drawText(40, i * 21 + 100, 18, files[i], Color::White, 1));
       }
     }
     else
     {
-      select.draw(drawText(215, 120, 20, "No MIDI Files Found", Color::White, 0));
+      select.draw(drawText(400, 120, 20, "No MIDI Files Found", Color::White, 0));
     }
 
     if (MIDIDevices.size() > 0)
@@ -161,7 +159,7 @@ int displaySelectionScreen()
       for (int i = 0; i < MIDIDevices.size(); i++)
       {
         bool hover = false;
-        if (m.x > 400 && m.x < 750 && m.y > i * 21 + 100 && m.y < i * 21 + 120)
+        if (m.x > 840 && m.x < 1560 && m.y > i * 21 + 100 && m.y < i * 21 + 120)
         {
           hover = true;
           if (Mouse::isButtonPressed(sf::Mouse::Left))
@@ -169,14 +167,14 @@ int displaySelectionScreen()
             selectedDevice = i;
           }
         }
-        select.draw(drawRect(400, i * 21 + 100, 350, 20, Color(0, 0, 127 + (hover * 50) + ((i == selectedDevice) * 70))));
-        select.draw(drawText(425, i * 21 + 100, 18, MIDIDevices[i], Color::White, 1));
-        select.draw(drawSprite(midi, 401, i * 21 + 101, 2));
+        select.draw(drawRect(840, i * 21 + 100, 720, 20, Color(0, 0, 127 + (hover * 50) + ((i == selectedDevice) * 70))));
+        select.draw(drawText(865, i * 21 + 100, 18, MIDIDevices[i], Color::White, 1));
+        select.draw(drawSprite(midi, 841, i * 21 + 101, 2));
       }
     }
     else
     {
-      select.draw(drawText(575, 120, 20, "No MIDI Devices Found", Color::White, 0));
+      select.draw(drawText(1150, 120, 20, "No MIDI Devices Found", Color::White, 0));
     }
 
     select.display();
@@ -186,11 +184,11 @@ int displaySelectionScreen()
 
 int displayPlayerScreen()
 {
-  RenderWindow window(sf::VideoMode(800, 600), "Player");
+  RenderWindow window(sf::VideoMode(1600, 1000), "Player", Style::Titlebar);
   window.setFramerateLimit(60);
 
   globalLength = notes[notes.size() - 1][0];
-  float step = 770.0 / (float)globalLength;
+  float step = 1540.0 / (float)globalLength;
 
   while (window.isOpen())
   {
@@ -207,14 +205,14 @@ int displayPlayerScreen()
 
     window.clear();
 
-    window.draw(drawRect(5, 5, 780, 125, Color(15, 15, 15)));
-    window.draw(drawSprite(grid, 10, 10, 1));
+    window.draw(drawRect(10, 10, 1560, 250, Color(15, 15, 15)));
+    window.draw(drawSprite(grid, 20, 20, 2));
 
-    window.draw(drawText(10, 105, 16, to_string((int)Tempo) + " BPM (" + to_string(Tempo * speeds[speedIndex]) + ")", Color::White, 1));
-    window.draw(drawRect(5, 135, 780, 10, Color(60, 60, 60)));
-    int x = ((float)step * (float)MIDITime) + 5;
-    window.draw(drawSprite(marker, x - 3, 135, 1));
-    if (m.x > x - 5 && m.x < x + 5 && m.y > 130 && m.y < 140 || seekT)
+    window.draw(drawText(20, 210, 32, to_string((int)Tempo) + " BPM (" + to_string(Tempo * speeds[speedIndex]) + ")", Color::White, 1));
+    window.draw(drawRect(10, 270, 1560, 20, Color(60, 60, 60)));
+    int x = ((float)step * (float)MIDITime) + 10;
+    window.draw(drawSprite(marker, x - 6, 270, 2));
+    if (m.x > x - 10 && m.x < x + 10 && m.y > 260 && m.y < 280 || seekT)
     {
       seekT = false;
       if (Mouse::isButtonPressed(sf::Mouse::Left))
@@ -245,22 +243,22 @@ int displayPlayerScreen()
       {
         if (activeNotes[i][j])
         {
-          window.draw(drawRect(11 + (j * 6), 11 + (i * 6), 5, 5, midiColors[i]));
+          window.draw(drawRect(22 + (j * 12), 22 + (i * 12), 10, 10, midiColors[i]));
         }
       }
     }
 
-    window.draw(drawRect(5, 150, 790, 1, Color::White));
+    window.draw(drawRect(10, 300, 1580, 1, Color::White));
 
     if (playing)
-      window.draw(drawSprite(play, 10, 155, 2));
+      window.draw(drawSprite(play, 20, 310, 4));
     else
-      window.draw(drawSprite(stop, 10, 155, 2));
+      window.draw(drawSprite(stop, 20, 310, 4));
 
     play.setColor(sf::Color(255, 255, 255));
     stop.setColor(sf::Color(255, 255, 255));
 
-    if (m.x > 10 && m.x < 30 && m.y > 150 && m.y < 170)
+    if (m.x > 20 && m.x < 64 && m.y > 310 && m.y < 354)
     {
       if(playing)
         play.setColor(sf::Color(160, 160, 160));
@@ -276,11 +274,11 @@ int displayPlayerScreen()
         playT = false;
     }
 
-    window.draw(drawSprite(speed, 40, 155, 2));
-    window.draw(drawText(40, 180, 16, speedNames[speedIndex], Color::White, 1));
-    x = (speedIndex * 20) + 63;
-    window.draw(drawCircle(x, 166, 5, Color::Red));
-    if(m.x > 40 && m.x < 226 && m.y > 155 && m.y < 177){
+    window.draw(drawSprite(speed, 80, 310, 4));
+    window.draw(drawText(80, 360, 32, speedNames[speedIndex], Color::White, 1));
+    x = (speedIndex * 40) + 126;
+    window.draw(drawCircle(x, 332, 10, Color::Red));
+    if(m.x > 80 && m.x < 452 && m.y > 310 && m.y < 354){
       if(Mouse::isButtonPressed(sf::Mouse::Left)){
         int lowestIndex = 8;
         for(int i = 0; i < 8; i++){
@@ -293,14 +291,14 @@ int displayPlayerScreen()
     }
 
     bool backHover = false;
-    if(m.x > 5 && m.x < 205 && m.y > 565 && m.y < 695){
+    if(m.x > 10 && m.x < 410 && m.y > 930 && m.y < 990){
       backHover = true;
       if(Mouse::isButtonPressed(Mouse::Left)){
         return 1;
       }
     }
-    window.draw(drawRect(5, 565, 200, 30, Color(100 + (backHover * 50), 0, 0)));
-    window.draw(drawText(105, 570, 16, "Back", Color::White, 0));
+    window.draw(drawRect(10, 930, 400, 60, Color(100 + (backHover * 50), 0, 0)));
+    window.draw(drawText(210, 940, 32, "Back", Color::White, 0));
 
     window.display();
 
