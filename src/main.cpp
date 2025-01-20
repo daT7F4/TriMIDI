@@ -38,7 +38,7 @@ int main()
       std::string ext = entry.path().extension().string();
       if (ext == ".mid" || ext == ".midi")
       {
-        files.push_back(entry.path().filename().string().substr(0, 20));
+        files.push_back(entry.path().filename().string());
       }
     }
   }
