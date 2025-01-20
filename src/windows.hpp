@@ -46,6 +46,10 @@ Color midiColors[16] = {
     Color(233, 30, 99)   // Pink
 };
 
+float speeds[8] = {0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2};
+int speedX[9] = {62, 84, 106, 128, 150, 172, 194, 216, 800};
+int speedIndex = 3;
+
 void updateNotes(bool reverse)
 {
   thirdytwo2eight(notes[noteIndex][1]);
@@ -270,6 +274,19 @@ int displayPlayerScreen()
     }
 
     window.draw(drawSprite(speed, 40, 155, 2));
+    x = (speedIndex * 20) + 63;
+    window.draw(drawCircle(x, 166, 5, Color::Red));
+    if(m.x > 40 && m.x < 226 && m.y > 155 && m.y < 177){
+      if(Mouse::isButtonPressed(sf::Mouse::Left)){
+        int lowestIndex = 8;
+        for(int i = 0; i < 8; i++){
+          if(abs(speedX[i] - m.x) < abs(speedX[lowestIndex] - m.x)){
+            lowestIndex = i;
+          }
+        }
+        speedIndex = lowestIndex;
+      } 
+    }
 
     window.display();
 
