@@ -6,9 +6,14 @@
 #include "drawFunctions.hpp"
 #include "readFunctions.hpp"
 
+#include "SelbaWard/ProgressBar.hpp"
+
 RtMidiOut midiOut;
 
 using namespace sf;
+using namespace sw;
+
+ProgressBar fileProgress(Vector2f(600, 40));
 
 vector<string> files;
 uint64_t noteIndex, metaIndex, systemIndex;
@@ -18,8 +23,8 @@ uint64_t MIDITime;
 uint64_t lastMIDITime;
 bool activeNotes[16][128];
 
-int selectedFile;
-int selectedDevice;
+int selectedFile = -1;
+int selectedDevice = -1;
 
 bool seekT = false;
 bool playT = false;
@@ -77,15 +82,23 @@ void updateSystem()
   }
 }
 
-int displaySelectionScreen()
+int displaySelectionScreen(RenderWindow &select)
 {
-  selectedFile = -1;
-  selectedDevice = -1;
-
-  RenderWindow select(sf::VideoMode(1600, 1000), "Selection Screen", Style::Titlebar);
   select.setFramerateLimit(60);
 
   listMidiDevices();
+
+  fileProgress.setShowBackgroundAndFrame(true);
+
+  fileProgress.setPosition(Vector2f(500, 30));
+
+  fileProgress.setFrameThickness(1);;
+
+  fileProgress.setBackgroundColor(Color::Black);
+
+  fileProgress.setColor(Color::White);
+
+  fileProgress.setFrameColor(Color::White);
 
   while (select.isOpen())
   {
@@ -123,14 +136,14 @@ int displaySelectionScreen()
     }
 
     select.draw(drawRect(5, 90, 1590, 1, Color::White));
-    select.draw(drawText(5, 5, 80, "TriMIDI", Color::White, 1));
-    select.draw(drawText(330, 5, 20, "v.1.3.3", Color::White, 1));
+    select.draw(drawText(font, 5, 5, 80, "TriMIDI", Color::White, 1));
+    select.draw(drawText(font, 330, 5, 20, "v.1.3.3", Color::White, 1));
 
     select.draw(drawRect(1190, 10, 400, 30, Color(0, 100 + (startHover * 50) - ((files.size() == 0 || MIDIDevices.size() == 0 || selectedDevice == -1 || selectedFile == -1) * 50), 0)));
     select.draw(drawRect(1190, 50, 400, 30, Color(100 + (exitHover * 50), 0, 0)));
 
-    select.draw(drawText(1390, 16, 16, "Start", Color::White, 0));
-    select.draw(drawText(1390, 56, 16, "Exit", Color::White, 0));
+    select.draw(drawText(font, 1390, 16, 16, "Start", Color::White, 0));
+    select.draw(drawText(font, 1390, 56, 16, "Exit", Color::White, 0));
 
     if (files.size() > 0)
     {
@@ -146,12 +159,12 @@ int displaySelectionScreen()
           }
         }
         select.draw(drawRect(40, i * 21 + 100, 760, 20, Color(0, 0, 127 + (hover * 50) + ((i == selectedFile) * 70))));
-        select.draw(drawText(40, i * 21 + 100, 18, files[i], Color::White, 1));
+        select.draw(drawText(font, 40, i * 21 + 100, 18, files[i], Color::White, 1));
       }
     }
     else
     {
-      select.draw(drawText(400, 120, 20, "No MIDI Files Found", Color::White, 0));
+      select.draw(drawText(font, 400, 120, 20, "No MIDI Files Found", Color::White, 0));
     }
 
     if (MIDIDevices.size() > 0)
@@ -168,14 +181,16 @@ int displaySelectionScreen()
           }
         }
         select.draw(drawRect(840, i * 21 + 100, 720, 20, Color(0, 0, 127 + (hover * 50) + ((i == selectedDevice) * 70))));
-        select.draw(drawText(865, i * 21 + 100, 18, MIDIDevices[i], Color::White, 1));
+        select.draw(drawText(font, 865, i * 21 + 100, 18, MIDIDevices[i], Color::White, 1));
         select.draw(drawSprite(midi, 841, i * 21 + 101, 2));
       }
     }
     else
     {
-      select.draw(drawText(1150, 120, 20, "No MIDI Devices Found", Color::White, 0));
+      select.draw(drawText(font, 1150, 120, 20, "No MIDI Devices Found", Color::White, 0));
     }
+
+    select.draw(fileProgress);
 
     select.display();
   }
@@ -208,7 +223,7 @@ int displayPlayerScreen()
     window.draw(drawRect(10, 10, 1560, 250, Color(15, 15, 15)));
     window.draw(drawSprite(grid, 20, 20, 2));
 
-    window.draw(drawText(20, 210, 32, to_string((int)Tempo) + " BPM (" + to_string(Tempo * speeds[speedIndex]) + ")", Color::White, 1));
+    window.draw(drawText(font, 20, 210, 32, to_string((int)Tempo) + " BPM (" + to_string(Tempo * speeds[speedIndex]) + ")", Color::White, 1));
     window.draw(drawRect(10, 270, 1560, 20, Color(60, 60, 60)));
     int x = ((float)step * (float)MIDITime) + 10;
     window.draw(drawSprite(marker, x - 6, 270, 2));
@@ -275,7 +290,7 @@ int displayPlayerScreen()
     }
 
     window.draw(drawSprite(speed, 80, 310, 4));
-    window.draw(drawText(80, 360, 32, speedNames[speedIndex], Color::White, 1));
+    window.draw(drawText(font, 80, 360, 32, speedNames[speedIndex], Color::White, 1));
     x = (speedIndex * 40) + 126;
     window.draw(drawCircle(x, 332, 10, Color::Red));
     if(m.x > 80 && m.x < 452 && m.y > 310 && m.y < 354){
@@ -298,7 +313,7 @@ int displayPlayerScreen()
       }
     }
     window.draw(drawRect(10, 930, 400, 60, Color(100 + (backHover * 50), 0, 0)));
-    window.draw(drawText(210, 940, 32, "Back", Color::White, 0));
+    window.draw(drawText(font, 210, 940, 32, "Back", Color::White, 0));
 
     window.display();
 

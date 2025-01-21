@@ -14,7 +14,7 @@ void initFont()
   font.loadFromFile("./assets/Doto-VariableFont_ROND,wght.ttf");
 }
 
-Text drawText(int x, int y, int size, string t, Color color, bool centerAllign)
+Text drawText(Font &font ,int x, int y, int size, string t, Color color, bool centerAllign)
 {
   Text text;
   text.setFont(font);

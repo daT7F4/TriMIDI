@@ -45,8 +45,8 @@ int main()
 
   while (true)
   {
-
-    if (displaySelectionScreen() == 0)
+    RenderWindow select(sf::VideoMode(1600, 1000), "Selection Screen", Style::Titlebar);
+    if (displaySelectionScreen(select) == 0)
       return 0;
 
     ifstream file("./midi_files/" + files[selectedFile], ios::binary);
