@@ -82,23 +82,13 @@ void updateSystem()
   }
 }
 
-int displaySelectionScreen(RenderWindow &select)
+int displaySelectionScreen()
 {
+  RenderWindow select(sf::VideoMode(1600, 1000), "Selection Screen", Style::Titlebar);
+
   select.setFramerateLimit(60);
 
   listMidiDevices();
-
-  fileProgress.setShowBackgroundAndFrame(true);
-
-  fileProgress.setPosition(Vector2f(500, 30));
-
-  fileProgress.setFrameThickness(1);;
-
-  fileProgress.setBackgroundColor(Color::Black);
-
-  fileProgress.setColor(Color::White);
-
-  fileProgress.setFrameColor(Color::White);
 
   while (select.isOpen())
   {
@@ -189,8 +179,6 @@ int displaySelectionScreen(RenderWindow &select)
     {
       select.draw(drawText(font, 1150, 120, 20, "No MIDI Devices Found", Color::White, 0));
     }
-
-    select.draw(fileProgress);
 
     select.display();
   }

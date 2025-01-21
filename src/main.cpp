@@ -45,8 +45,7 @@ int main()
 
   while (true)
   {
-    RenderWindow select(sf::VideoMode(1600, 1000), "Selection Screen", Style::Titlebar);
-    if (displaySelectionScreen(select) == 0)
+    if (displaySelectionScreen() == 0)
       return 0;
 
     ifstream file("./midi_files/" + files[selectedFile], ios::binary);
@@ -83,7 +82,6 @@ int main()
     PPQN = eight2sixteen(MD[rI], MD[rI + 1]);
     cout << "PPQN: " << PPQN << endl;
     rI += 2;
-
     for (int track = 0; track < trackCount; track++)
     {
       for (int i = 0; i < 4; i++)
@@ -99,7 +97,7 @@ int main()
       rI += 4;
       u32 trackLenght =
           eight2thirtytwo(MD[rI], MD[rI + 1], MD[rI + 2], MD[rI + 3]);
-      cout << "Track #" << track << " size: " << trackLenght << " Bytes" << endl;
+      cout << "Track #" << track << ", Size: " << trackLenght << " bytes" << endl;
       rI += 4;
       uint64_t end = rI + trackLenght;
       trackTime = 0;

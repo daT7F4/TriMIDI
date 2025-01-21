@@ -11,7 +11,7 @@ Sprite grid, grid2, play, stop, marker, midi, speed;
 
 void initFont()
 {
-  font.loadFromFile("./assets/Doto-VariableFont_ROND,wght.ttf");
+  font.loadFromFile("./assets/SourceCodePro-Light.ttf");
 }
 
 Text drawText(Font &font ,int x, int y, int size, string t, Color color, bool centerAllign)
