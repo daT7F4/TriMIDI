@@ -5,13 +5,14 @@
 using namespace std;
 using namespace sf;
 
-Font font;
+Font font, thiccfont;
 Texture texture;
 Sprite grid, grid2, play, stop, marker, midi, speed;
 
 void initFont()
 {
-  font.loadFromFile("./assets/SourceCodePro-Light.ttf");
+  font.loadFromFile("./assets/SourceCodePro-light.ttf");
+  thiccfont.loadFromFile("./assets/SourceCodePro-Black.ttf");
 }
 
 Text drawText(Font &font ,int x, int y, int size, string t, Color color, bool centerAllign)

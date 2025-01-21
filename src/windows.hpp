@@ -16,11 +16,12 @@ using namespace sw;
 ProgressBar fileProgress(Vector2f(600, 40));
 
 vector<string> files;
-uint64_t noteIndex, metaIndex, systemIndex;
+uint64_t noteIndex, lateNoteIndex, metaIndex, systemIndex;
 uint64_t globalLength;
 uint16_t PPQN;
 uint64_t MIDITime;
 uint64_t lastMIDITime;
+uint64_t NotesPerSecond;
 bool activeNotes[16][128];
 
 int selectedFile = -1;
@@ -126,14 +127,14 @@ int displaySelectionScreen()
     }
 
     select.draw(drawRect(5, 90, 1590, 1, Color::White));
-    select.draw(drawText(font, 5, 5, 80, "TriMIDI", Color::White, 1));
+    select.draw(drawText(thiccfont, 5, 5, 80, "TriMIDI", Color::White, 1));
     select.draw(drawText(font, 330, 5, 20, "v.1.3.3", Color::White, 1));
 
     select.draw(drawRect(1190, 10, 400, 30, Color(0, 100 + (startHover * 50) - ((files.size() == 0 || MIDIDevices.size() == 0 || selectedDevice == -1 || selectedFile == -1) * 50), 0)));
     select.draw(drawRect(1190, 50, 400, 30, Color(100 + (exitHover * 50), 0, 0)));
 
-    select.draw(drawText(font, 1390, 16, 16, "Start", Color::White, 0));
-    select.draw(drawText(font, 1390, 56, 16, "Exit", Color::White, 0));
+    select.draw(drawText(thiccfont, 1390, 16, 16, "Start", Color::White, 0));
+    select.draw(drawText(thiccfont, 1390, 56, 16, "Exit", Color::White, 0));
 
     if (files.size() > 0)
     {
@@ -154,7 +155,7 @@ int displaySelectionScreen()
     }
     else
     {
-      select.draw(drawText(font, 400, 120, 20, "No MIDI Files Found", Color::White, 0));
+      select.draw(drawText(thiccfont, 400, 120, 20, "No MIDI Files Found", Color::White, 0));
     }
 
     if (MIDIDevices.size() > 0)
@@ -177,7 +178,7 @@ int displaySelectionScreen()
     }
     else
     {
-      select.draw(drawText(font, 1150, 120, 20, "No MIDI Devices Found", Color::White, 0));
+      select.draw(drawText(thiccfont, 1150, 120, 20, "No MIDI Devices Found", Color::White, 0));
     }
 
     select.display();
@@ -212,6 +213,7 @@ int displayPlayerScreen()
     window.draw(drawSprite(grid, 20, 20, 2));
 
     window.draw(drawText(font, 20, 210, 32, to_string((int)Tempo) + " BPM (" + to_string(Tempo * speeds[speedIndex]) + ")", Color::White, 1));
+    window.draw(drawText(font, 500, 210, 32, to_string(NotesPerSecond) + "NPS", Color::White, 1));
     window.draw(drawRect(10, 270, 1560, 20, Color(60, 60, 60)));
     int x = ((float)step * (float)MIDITime) + 10;
     window.draw(drawSprite(marker, x - 6, 270, 2));
@@ -228,6 +230,11 @@ int displayPlayerScreen()
           {
             updateNotes(true);
             noteIndex--;
+          }
+          while (notes[lateNoteIndex][0] > MIDITime - ((float)Tempo / 60.0 * (float)PPQN))
+          {
+            updateNotes(true);
+            lateNoteIndex--;
           }
           while (systemMessages[systemIndex][0] > MIDITime)
           {
@@ -301,7 +308,7 @@ int displayPlayerScreen()
       }
     }
     window.draw(drawRect(10, 930, 400, 60, Color(100 + (backHover * 50), 0, 0)));
-    window.draw(drawText(font, 210, 940, 32, "Back", Color::White, 0));
+    window.draw(drawText(thiccfont, 210, 940, 32, "Back", Color::White, 0));
 
     window.display();
 
@@ -313,6 +320,13 @@ int displayPlayerScreen()
       updateNotes(false);
       noteIndex++;
     }
+     while (notes[lateNoteIndex][0] < MIDITime - ((float)Tempo / 60.0 * (float)PPQN) && lateNoteIndex < notes.size() - 1)
+    {
+      updateNotes(false);
+      lateNoteIndex++;
+    }
+
+    NotesPerSecond = noteIndex - lateNoteIndex;
 
     if (noteIndex == notes.size())
       window.close();

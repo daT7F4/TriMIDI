@@ -57,6 +57,7 @@ int main()
     }
 
     char byte;
+    MD = {};
     while (file.get(byte))
     {
       MD.push_back(static_cast<u8>(byte));
@@ -122,7 +123,7 @@ int main()
          { return a[0] < b[0]; });
 
     cout << "Done decoding" << endl;
-    MD.clear();
+    MD = {};
 
     unsigned int nPorts = midiOut.getPortCount();
 
