@@ -123,7 +123,7 @@ int displaySelectionScreen()
 
     select.draw(drawRect(5, 90, 1590, 1, Color::White));
     select.draw(drawText(thiccfont, 5, 5, 80, "TriMIDI", Color::White, 1));
-    select.draw(drawText(font, 330, 5, 20, "v.1.3.4.1", Color::White, 1));
+    select.draw(drawText(font, 330, 5, 20, "v.1.3.4.2", Color::White, 1));
 
     select.draw(drawRect(1190, 10, 400, 30, Color(0, 100 + (startHover * 50) - ((files.size() == 0 || MIDIDevices.size() == 0 || selectedDevice == -1 || selectedFile == -1) * 50), 0)));
     select.draw(drawRect(1190, 50, 400, 30, Color(100 + (exitHover * 50), 0, 0)));
@@ -198,6 +198,7 @@ int displayPlayerScreen()
       if (event.type == Event::Closed)
       {
         window.close();
+        stopAllNotes(midiOut);
         return 0;
       }
     }
@@ -231,7 +232,6 @@ int displayPlayerScreen()
           }
           while (notes[lateNoteIndex][0] > MIDITime - ((float)Tempo / 60.0 * (float)PPQN))
           {
-            updateNotes(true);
             lateNoteIndex--;
           }
           while (systemMessages[systemIndex][0] > MIDITime)
@@ -259,9 +259,9 @@ int displayPlayerScreen()
     window.draw(drawRect(10, 300, 1580, 1, Color::White));
 
     if (playing)
-      window.draw(drawSprite(play, 20, 310, 4));
-    else
       window.draw(drawSprite(stop, 20, 310, 4));
+    else
+      window.draw(drawSprite(play, 20, 310, 4));
 
     play.setColor(sf::Color(255, 255, 255));
     stop.setColor(sf::Color(255, 255, 255));
@@ -269,9 +269,9 @@ int displayPlayerScreen()
     if (m.x > 20 && m.x < 64 && m.y > 310 && m.y < 354)
     {
       if (playing)
-        play.setColor(sf::Color(160, 160, 160));
-      else
         stop.setColor(sf::Color(160, 160, 160));
+      else
+        play.setColor(sf::Color(160, 160, 160));
 
       if (Mouse::isButtonPressed(sf::Mouse::Left) && !playT)
       {
@@ -326,14 +326,15 @@ int displayPlayerScreen()
     }
     while (notes[lateNoteIndex][0] < MIDITime - ((float)Tempo / 60.0 * (float)PPQN) && lateNoteIndex < notes.size() - 1)
     {
-      updateNotes(false);
       lateNoteIndex++;
     }
 
     NotesPerSecond = noteIndex - lateNoteIndex;
 
-    if (noteIndex == notes.size())
+    if (noteIndex == notes.size()){
       window.close();
+      stopAllNotes(midiOut);
+    }
 
     while (meta[metaIndex][0] < MIDITime && metaIndex < meta.size() - 1)
     {
@@ -351,5 +352,6 @@ int displayPlayerScreen()
     if (noteIndex == notes.size() - 1 && systemIndex == systemMessages.size() - 1 && metaIndex == meta.size() - 1)
       return 1;
   }
+  stopAllNotes(midiOut);
   return 0;
 }

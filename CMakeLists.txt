@@ -23,7 +23,7 @@ else()
 endif()
 
 # Main executable
-add_executable(TriMIDI ./src/main.cpp ./src/SelbaWard/ProgressBar.cpp)
+add_executable(TriMIDI ./src/main.cpp)
 
 # Link SFML libraries
 target_link_libraries(TriMIDI PRIVATE 
