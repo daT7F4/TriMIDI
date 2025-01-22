@@ -214,6 +214,7 @@ int displayPlayerScreen()
 
     window.draw(drawText(font, 20, 210, 32, to_string((int)Tempo) + " BPM (" + to_string(Tempo * speeds[speedIndex]) + ")", Color::White, 1));
     window.draw(drawText(font, 500, 210, 32, to_string(NotesPerSecond) + "NPS", Color::White, 1));
+    window.draw(drawText(font, 800, 210, 32, to_string(noteIndex) + "/" + to_string(notes.size() - 1), Color::White, 1));
     window.draw(drawRect(10, 270, 1560, 20, Color(60, 60, 60)));
     int x = ((float)step * (float)MIDITime) + 10;
     window.draw(drawSprite(marker, x - 6, 270, 2));
