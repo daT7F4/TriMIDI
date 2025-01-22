@@ -6,14 +6,9 @@
 #include "drawFunctions.hpp"
 #include "readFunctions.hpp"
 
-#include "SelbaWard/ProgressBar.hpp"
-
 RtMidiOut midiOut;
 
 using namespace sf;
-using namespace sw;
-
-ProgressBar fileProgress(Vector2f(600, 40));
 
 vector<string> files;
 uint64_t noteIndex, lateNoteIndex, metaIndex, systemIndex;
