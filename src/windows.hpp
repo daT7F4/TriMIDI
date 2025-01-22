@@ -128,7 +128,7 @@ int displaySelectionScreen()
 
     select.draw(drawRect(5, 90, 1590, 1, Color::White));
     select.draw(drawText(thiccfont, 5, 5, 80, "TriMIDI", Color::White, 1));
-    select.draw(drawText(font, 330, 5, 20, "v.1.3.3", Color::White, 1));
+    select.draw(drawText(font, 330, 5, 20, "v.1.3.4.1", Color::White, 1));
 
     select.draw(drawRect(1190, 10, 400, 30, Color(0, 100 + (startHover * 50) - ((files.size() == 0 || MIDIDevices.size() == 0 || selectedDevice == -1 || selectedFile == -1) * 50), 0)));
     select.draw(drawRect(1190, 50, 400, 30, Color(100 + (exitHover * 50), 0, 0)));
