@@ -189,6 +189,7 @@ int displaySelectionScreen()
 int displayPlayerScreen()
 {
   RenderWindow window(sf::VideoMode(1600, 1000), "Player", Style::Titlebar);
+  cout << "Render start" << endl;
   window.setFramerateLimit(60);
 
   globalLength = notes[notes.size() - 1][0];
@@ -199,7 +200,8 @@ int displayPlayerScreen()
     Event event;
     while (window.pollEvent(event))
     {
-      if (event.type == Event::Closed){
+      if (event.type == Event::Closed)
+      {
         window.close();
         return 0;
       }
@@ -271,7 +273,7 @@ int displayPlayerScreen()
 
     if (m.x > 20 && m.x < 64 && m.y > 310 && m.y < 354)
     {
-      if(playing)
+      if (playing)
         play.setColor(sf::Color(160, 160, 160));
       else
         stop.setColor(sf::Color(160, 160, 160));
@@ -289,22 +291,28 @@ int displayPlayerScreen()
     window.draw(drawText(font, 80, 360, 32, speedNames[speedIndex], Color::White, 1));
     x = (speedIndex * 40) + 126;
     window.draw(drawCircle(x, 332, 10, Color::Red));
-    if(m.x > 80 && m.x < 452 && m.y > 310 && m.y < 354){
-      if(Mouse::isButtonPressed(sf::Mouse::Left)){
+    if (m.x > 80 && m.x < 452 && m.y > 310 && m.y < 354)
+    {
+      if (Mouse::isButtonPressed(sf::Mouse::Left))
+      {
         int lowestIndex = 8;
-        for(int i = 0; i < 8; i++){
-          if(abs(speedX[i] - m.x) < abs(speedX[lowestIndex] - m.x)){
+        for (int i = 0; i < 8; i++)
+        {
+          if (abs(speedX[i] - m.x) < abs(speedX[lowestIndex] - m.x))
+          {
             lowestIndex = i;
           }
         }
         speedIndex = lowestIndex;
-      } 
+      }
     }
 
     bool backHover = false;
-    if(m.x > 10 && m.x < 410 && m.y > 930 && m.y < 990){
+    if (m.x > 10 && m.x < 410 && m.y > 930 && m.y < 990)
+    {
       backHover = true;
-      if(Mouse::isButtonPressed(Mouse::Left)){
+      if (Mouse::isButtonPressed(Mouse::Left))
+      {
         return 1;
       }
     }
@@ -321,7 +329,7 @@ int displayPlayerScreen()
       updateNotes(false);
       noteIndex++;
     }
-     while (notes[lateNoteIndex][0] < MIDITime - ((float)Tempo / 60.0 * (float)PPQN) && lateNoteIndex < notes.size() - 1)
+    while (notes[lateNoteIndex][0] < MIDITime - ((float)Tempo / 60.0 * (float)PPQN) && lateNoteIndex < notes.size() - 1)
     {
       updateNotes(false);
       lateNoteIndex++;
@@ -337,12 +345,15 @@ int displayPlayerScreen()
       metaIndex++;
       Tempo = 60000000.0 / meta[metaIndex][1];
     }
-    while (systemMessages[systemIndex][0] < MIDITime && systemIndex < systemMessages.size() - 1)
+    if (systemMessages.size() != 0)
     {
-      updateSystem();
-      systemIndex++;
+      while (systemMessages[systemIndex][0] < MIDITime && systemIndex < systemMessages.size() - 1)
+      {
+        updateSystem();
+        systemIndex++;
+      }
     }
-    if(noteIndex == notes.size() - 1 && systemIndex == systemMessages.size() - 1 && metaIndex == meta.size() - 1)
+    if (noteIndex == notes.size() - 1 && systemIndex == systemMessages.size() - 1 && metaIndex == meta.size() - 1)
       return 1;
   }
   return 0;
