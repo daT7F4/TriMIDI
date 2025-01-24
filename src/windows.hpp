@@ -102,6 +102,10 @@ int displaySelectionScreen()
         return 0;
       }
     }
+    if(Keyboard::isKeyPressed(Keyboard::Escape)){
+      select.close();
+      return 0;
+    } 
     select.clear();
     Vector2i m = Mouse::getPosition(select);
 
@@ -206,6 +210,10 @@ int displayPlayerScreen()
         stopAllNotes(midiOut);
         return 0;
       }
+    }
+    if(Keyboard::isKeyPressed(Keyboard::Escape)){
+      window.close();
+      return 0;
     }
 
     Vector2i m = Mouse::getPosition(window);
