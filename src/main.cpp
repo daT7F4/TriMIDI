@@ -60,6 +60,17 @@ int main()
     notes.clear();
     meta.clear();
     systemMessages.clear();
+    MIDITime = 0;
+    noteIndex = 0;
+    lateNoteIndex = 0;
+    lastMIDITime = 0;
+    metaIndex = 0;
+    systemIndex = 0;
+    for(int i = 0; i < 128; i++){
+      for(int j = 0; j < 16; j++){
+        activeNotes[j][i] = false;
+      }
+    }
     while (file.get(byte))
     {
       MD.push_back(static_cast<u8>(byte));
