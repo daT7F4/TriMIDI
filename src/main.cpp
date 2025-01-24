@@ -17,8 +17,6 @@
 using namespace std;
 namespace fs = std::filesystem;
 
-float fps = 60.0;
-
 u8 header[8] = {0x4D, 0x54, 0x68, 0x64, 0x00, 0x00, 0x00, 0x06};
 u8 trackHeader[4] = {0x4D, 0x54, 0x72, 0x6B};
 
@@ -66,6 +64,7 @@ int main()
     lastMIDITime = 0;
     metaIndex = 0;
     systemIndex = 0;
+    actualNoteCount = 0;
     for(int i = 0; i < 128; i++){
       for(int j = 0; j < 16; j++){
         activeNotes[j][i] = false;

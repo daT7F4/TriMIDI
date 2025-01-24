@@ -10,8 +10,10 @@ RtMidiOut midiOut;
 
 using namespace sf;
 
+Clock measure;
+
 vector<string> files;
-uint64_t noteIndex, lateNoteIndex, metaIndex, systemIndex;
+uint64_t noteIndex, lateNoteIndex, metaIndex, systemIndex, actualNoteCount;
 uint64_t globalLength;
 uint16_t PPQN;
 uint64_t MIDITime;
@@ -27,6 +29,7 @@ bool playT = false;
 bool playing = true;
 
 float Tempo;
+double fps = 60.0;
 
 Color midiColors[16] = {
     Color(255, 87, 34),  // Red-Orange
@@ -59,11 +62,13 @@ void updateNotes(bool reverse)
   {
     playNote(midiOut, byte1, byte2, byte3);
     activeNotes[byte1][byte2] = !reverse;
+    actualNoteCount++;
   }
   else
   {
     stopNote(midiOut, byte1, byte2);
     activeNotes[byte1][byte2] = reverse;
+    actualNoteCount--;
   }
 }
 
@@ -123,7 +128,7 @@ int displaySelectionScreen()
 
     select.draw(drawRect(5, 90, 1590, 1, Color::White));
     select.draw(drawText(thiccfont, 5, 5, 80, "TriMIDI", Color::White, 1));
-    select.draw(drawText(font, 330, 5, 20, "v.1.3.4.2.1", Color::White, 1));
+    select.draw(drawText(font, 330, 5, 20, "v.1.3.5", Color::White, 1));
 
     select.draw(drawRect(1190, 10, 400, 30, Color(0, 100 + (startHover * 50) - ((files.size() == 0 || MIDIDevices.size() == 0 || selectedDevice == -1 || selectedFile == -1) * 50), 0)));
     select.draw(drawRect(1190, 50, 400, 30, Color(100 + (exitHover * 50), 0, 0)));
@@ -185,7 +190,7 @@ int displayPlayerScreen()
 {
   RenderWindow window(sf::VideoMode(1600, 1000), "Player", Style::Titlebar);
   cout << "Render start" << endl;
-  window.setFramerateLimit(60);
+  window.setVerticalSyncEnabled(true);
 
   globalLength = notes[notes.size() - 1][0];
   float step = 1540.0 / (float)globalLength;
@@ -212,7 +217,8 @@ int displayPlayerScreen()
 
     window.draw(drawText(font, 20, 210, 32, to_string((int)Tempo) + " BPM (" + to_string(Tempo * speeds[speedIndex]) + ")", Color::White, 1));
     window.draw(drawText(font, 500, 210, 32, to_string(NotesPerSecond) + "NPS", Color::White, 1));
-    window.draw(drawText(font, 800, 210, 32, to_string(noteIndex) + "/" + to_string(notes.size() - 1), Color::White, 1));
+    window.draw(drawText(font, 800, 210, 32, "Voices: " + to_string(actualNoteCount), Color::White, 1));
+    window.draw(drawText(font, 1200, 210, 32, to_string(fps), Color::White, 1));
     window.draw(drawRect(10, 270, 1560, 20, Color(60, 60, 60)));
     int x = ((float)step * (float)MIDITime) + 10;
     window.draw(drawSprite(marker, x - 6, 270, 2));
@@ -317,7 +323,7 @@ int displayPlayerScreen()
     window.display();
 
     if (playing)
-      MIDITime += (((float)Tempo * (float)PPQN) / 60.0) * (1.0 / 56.0) * speeds[speedIndex];
+      MIDITime += (((double)Tempo * (double)PPQN) / 60.f) * (1.f / (double)fps) * (double)speeds[speedIndex];
 
     while (notes[noteIndex][0] < MIDITime && noteIndex < notes.size() - 1)
     {
@@ -352,6 +358,8 @@ int displayPlayerScreen()
     }
     if (noteIndex == notes.size() - 1 && systemIndex == systemMessages.size() - 1 && metaIndex == meta.size() - 1)
       return 1;
+    fps = 0.96 / measure.restart().asSeconds();
+    if(fps < 10.0) fps = 60.0;
   }
   stopAllNotes(midiOut);
   return 0;
