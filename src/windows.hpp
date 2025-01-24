@@ -317,7 +317,7 @@ int displayPlayerScreen()
     window.display();
 
     if (playing)
-      MIDITime += (((float)Tempo * (float)PPQN) / 60.0) * (1.0 / 60.0) * speeds[speedIndex];
+      MIDITime += (((float)Tempo * (float)PPQN) / 60.0) * (1.0 / 56.0) * speeds[speedIndex];
 
     while (notes[noteIndex][0] < MIDITime && noteIndex < notes.size() - 1)
     {
@@ -330,6 +330,7 @@ int displayPlayerScreen()
     }
 
     NotesPerSecond = noteIndex - lateNoteIndex;
+    NotesPerSecond = NotesPerSecond / 2;
 
     if (noteIndex == notes.size()){
       window.close();
