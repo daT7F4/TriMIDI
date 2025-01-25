@@ -15,7 +15,7 @@ void initFont()
   thiccfont.loadFromFile("./assets/SourceCodePro-Black.ttf");
 }
 
-Text drawText(Font &font ,int x, int y, int size, string t, Color color, bool centerAllign)
+Text drawText(Font &font ,int x, int y, int size, string t, Color color, string allign)
 {
   Text text;
   text.setFont(font);
@@ -23,10 +23,13 @@ Text drawText(Font &font ,int x, int y, int size, string t, Color color, bool ce
   text.setCharacterSize(size);
   text.setFillColor(color);
   FloatRect bounds = text.getLocalBounds();
-  if (centerAllign)
-    text.setPosition(Vector2f(x, y));
-  else
+  if(allign == "l"){
+     text.setPosition(Vector2f(x, y));
+  } else if(allign == "c"){
     text.setPosition(Vector2f(x - ((int)bounds.width / 2), y));
+  } else if(allign == "r"){
+    text.setPosition(Vector2f(x - bounds.width, y));
+  }
   return text;
 }
 

@@ -15,7 +15,7 @@
 #define OFFSET 100
 
 using namespace std;
-namespace fs = std::filesystem;
+namespace fs = filesystem;
 
 u8 header[8] = {0x4D, 0x54, 0x68, 0x64, 0x00, 0x00, 0x00, 0x06};
 u8 trackHeader[4] = {0x4D, 0x54, 0x72, 0x6B};
@@ -23,6 +23,7 @@ u8 trackHeader[4] = {0x4D, 0x54, 0x72, 0x6B};
 int playingNotes;
 
 uint16_t trackCount;
+uint64_t totalSize;
 
 int main()
 {
@@ -33,7 +34,7 @@ int main()
   {
     if (entry.is_regular_file())
     {
-      std::string ext = entry.path().extension().string();
+      string ext = entry.path().extension().string();
       if (ext == ".mid" || ext == ".midi")
       {
         files.push_back(entry.path().filename().string());
@@ -55,16 +56,10 @@ int main()
     }
 
     char byte;
-    notes.clear();
-    meta.clear();
-    systemMessages.clear();
+    midiData.clear();
     MIDITime = 0;
-    noteIndex = 0;
-    lateNoteIndex = 0;
+    globalIndex = 0;
     lastMIDITime = 0;
-    metaIndex = 0;
-    systemIndex = 0;
-    actualNoteCount = 0;
     for(int i = 0; i < 128; i++){
       for(int j = 0; j < 16; j++){
         activeNotes[j][i] = false;
@@ -111,13 +106,13 @@ int main()
       u32 trackLenght =
           eight2thirtytwo(MD[rI], MD[rI + 1], MD[rI + 2], MD[rI + 3]);
       cout << "Track #" << track << ", Size: " << trackLenght << " bytes" << endl;
+      totalSize += trackLenght;
       rI += 4;
       uint64_t end = rI + trackLenght;
       trackTime = 0;
       while (rI < end)
       {
         getDelta();
-        trackTime += delta;
         if (MD[rI] == 0xFF)
           getMeta();
         else
@@ -127,21 +122,26 @@ int main()
       }
     }
 
-    sort(notes.begin(), notes.end(), [](const vector<uint64_t> &a, const vector<uint64_t> &b)
-         { return a[0] < b[0]; });
-    sort(systemMessages.begin(), systemMessages.end(), [](const vector<uint64_t> &a, const vector<uint64_t> &b)
-         { return a[0] < b[0]; });
-    sort(meta.begin(), meta.end(), [](const vector<uint64_t> &a, const vector<uint64_t> &b)
+    sort(midiData.begin(), midiData.end(), [](const vector<uint64_t> &a, const vector<uint64_t> &b)
          { return a[0] < b[0]; });
 
-    cout << "Done decoding" << endl;
+    cout << "Done decoding " << totalSize / 1000 << " kB" << endl;
+    cout << "Total data length is " << midiData.size() << endl;
     MD.clear();
 
     unsigned int nPorts = midiOut.getPortCount();
 
     midiOut.openPort(selectedDevice);
 
-    Tempo = 60000000.0 / meta[0][1];
+    while(true){
+      thirdytwo2eight(midiData[globalIndex][1]);
+      if(byte4 == 0xFF){
+        Tempo = 60000000.0 / (byte1 << 16 | byte2 << 8 | byte3);
+        break;
+      }
+      globalIndex++;
+    }
+    globalIndex = 0;
 
     if (displayPlayerScreen() == 0)
       return 0;

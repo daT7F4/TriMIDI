@@ -6,11 +6,11 @@
 using namespace std;
 
 vector<u8> MD;
-vector<vector<uint64_t>> notes;          // timestamp, (channel | note | velocity | on/off)
-vector<vector<uint64_t>> systemMessages; // timestamp, (value index, channel, value, 0)
-vector<vector<uint64_t>> meta;           // timestamp, tempo
+vector<vector<uint64_t>> midiData; // timestamp, data
+// if first byte is lower than 16 then data is (channel | note | velocity | on/off)
+// if first byte is higher than 16 then data is (value index, channel, value, 0)
+// if last byte is 0XFF then data is (tempo, tempo, tempo, 0xFF)
 
-u32 delta;
 uint64_t rI;
 uint64_t trackTime;
 u8 eventType;
@@ -34,7 +34,7 @@ void thirdytwo2eight(u32 value)
 
 void getDelta()
 {
-  delta = 0;
+  u32 delta = 0;
   while (MD[rI] > 127)
   {
     delta = delta << 7 | MD[rI] & 127;
@@ -42,17 +42,16 @@ void getDelta()
   }
   delta = delta << 7 | MD[rI] & 127;
   rI++;
+  trackTime += delta;
 }
 
 void getMeta()
 {
   rI++;
-  u32 tempo = 0;
   switch (MD[rI])
   {
   case 0x51:
-    tempo = eight2twentyfour(MD[rI + 2], MD[rI + 3], MD[rI + 4]);
-    meta.push_back({trackTime, tempo});
+    midiData.push_back({trackTime, (eight2twentyfour(MD[rI + 2], MD[rI + 3], MD[rI + 4]) << 8) | 0xFF});
     break;
   }
   rI++;
@@ -71,17 +70,17 @@ void getEvent()
   switch (eventType)
   {
   case 0b1000: // note off
-    notes.push_back({trackTime, eight2thirtytwo(channel, MD[rI], MD[rI + 1], 0)});
+    midiData.push_back({trackTime, eight2thirtytwo(channel, MD[rI], MD[rI + 1], 0)});
     rI += 2;
     break;
   case 0b1001: // note on
     if (MD[rI + 1] == 0)
     {
-      notes.push_back({trackTime, eight2thirtytwo(channel, MD[rI], MD[rI + 1], 0)});
+      midiData.push_back({trackTime, eight2thirtytwo(channel, MD[rI], MD[rI + 1], 0)});
     }
     else
     {
-      notes.push_back({trackTime, eight2thirtytwo(channel, MD[rI], MD[rI + 1], 1)});
+      midiData.push_back({trackTime, eight2thirtytwo(channel, MD[rI], MD[rI + 1], 1)});
     }
     rI += 2;
     break;
@@ -92,7 +91,7 @@ void getEvent()
     rI += 2;
     break;
   case 0b1100: // program change
-    systemMessages.push_back({trackTime, eight2thirtytwo(0, channel, MD[rI], 0)});
+    midiData.push_back({trackTime, eight2thirtytwo(16, channel, MD[rI], 0)});
     rI += 1;
     break;
   case 0b1101: // channel pressure

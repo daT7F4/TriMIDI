@@ -2,6 +2,8 @@
 
 using namespace std;
 
+bool activeNotes[16][128];
+
 vector<string> MIDIDevices;
 
 void playNote(RtMidiOut &midiOut, int channel, int note, int velocity)
@@ -48,7 +50,7 @@ void listMidiDevices()
       try
       {
         string portName = midiOut.getPortName(i);
-        // cout << i << ": " << portName << std::endl;
+        // cout << i << ": " << portName << endl;
         MIDIDevices.push_back(portName);
       }
       catch (RtMidiError &error)
@@ -68,6 +70,9 @@ void stopAllNotes(RtMidiOut &midiOut)
   for (int i = 0; i < 128; i++)
   {
     for (int j = 0; j < 16; j++)
+    {
       stopNote(midiOut, j, i);
+      activeNotes[j][i] = false;
+    }
   }
 }
