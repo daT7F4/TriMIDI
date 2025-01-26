@@ -27,8 +27,6 @@ uint64_t totalSize;
 
 int main()
 {
-  initFont();
-  loadSprites();
 
   for (const auto &entry : fs::directory_iterator("./midi_files"))
   {
@@ -122,8 +120,20 @@ int main()
       }
     }
 
-    sort(midiData.begin(), midiData.end(), [](const vector<uint64_t> &a, const vector<uint64_t> &b)
-         { return a[0] < b[0]; });
+    vector<pair<uint64_t, uint64_t>> pairs;
+    for (size_t i = 0; i < midiData.size(); i += 2) {
+        pairs.emplace_back(midiData[i], midiData[i + 1]);
+    }
+
+    sort(pairs.begin(), pairs.end());
+
+    midiData.clear();
+    for (const auto& p : pairs) {
+        midiData.push_back(p.first);
+        midiData.push_back(p.second);
+    }
+
+    pairs.clear();
 
     cout << "Done decoding " << totalSize / 1000 << " kB" << endl;
     cout << "Total data length is " << midiData.size() << endl;
@@ -134,7 +144,7 @@ int main()
     midiOut.openPort(selectedDevice);
 
     while(true){
-      thirdytwo2eight(midiData[globalIndex][1]);
+      thirdytwo2eight(midiData[(globalIndex << 1) + 1]);
       if(byte4 == 0xFF){
         Tempo = 60000000.0 / (byte1 << 16 | byte2 << 8 | byte3);
         break;

@@ -1,15 +1,19 @@
+#pragma once
+
 #include <string>
 #include <vector>
 #include <iostream>
 #include <string>
+
+#include <SFML/Graphics.hpp>
 
 #ifndef DRAWFUNCTIONS_HPP
 #define DRAWFUNCTIONS_HPP
 
 using namespace std;
 
-sf::Font font, thiccfont;
-sf::Texture texture;
+extern sf::Font font, thiccfont;
+extern sf::Texture texture;
 
 class Button{
   public:
@@ -58,6 +62,7 @@ class Rectangle{
 class Sprite{
   public:
     int x, y, scale;
+    sf::Color color = sf::Color::White;
     void InitSprite(sf::IntRect spriteRect);
     void DrawSprite(sf::RenderWindow &window);
   private:
@@ -84,5 +89,5 @@ void loadSprites(){
 
 */
 
-#endif;
+#endif
 

@@ -1,17 +1,20 @@
 #include "drawFunctions.hpp"
 #include <SFML/Graphics.hpp>
 
+sf::Font font, thiccfont;
+sf::Texture texture;
+
 void Button::InitButton(){
   button.setPosition(sf::Vector2f(x, y));
   button.setSize(sf::Vector2f(w, h));
 
-  Label.setFont(thiccfont);
+  Label.setFont(font);
   Label.setString(LabelText);
   Label.setCharacterSize(16);
   Label.setFillColor(sf::Color::White);
   sf::FloatRect bounds = Label.getLocalBounds();
   if(centerAllign)
-    Label.setPosition(sf::Vector2f(x - ((int)bounds.width / 2), y - ((int)bounds.height / 2)));
+    Label.setPosition(sf::Vector2f(x - ((int)bounds.width / 2) + (w / 2), y - bounds.height + (h / 2)));
   else
     Label.setPosition(sf::Vector2f(x + textOffset, y));
 }
@@ -21,10 +24,13 @@ void Button::DrawButton(sf::RenderWindow &window)
   switch(mode){
     case 0:
       button.setFillColor(Locked);
+      break;
     case 1:
       button.setFillColor(Open);
+      break;
     case 2:
       button.setFillColor(Hover);
+      break;
   }
   window.draw(button);
   window.draw(Label);
@@ -74,6 +80,7 @@ void Sprite::InitSprite(sf::IntRect spriteRect){
   sprite.setTextureRect(spriteRect);
   sprite.setScale(sf::Vector2f(scale, scale));
   sprite.setPosition(sf::Vector2f(x, y));
+  sprite.setColor(color);
 }
 
 void Sprite::DrawSprite(sf::RenderWindow &window){

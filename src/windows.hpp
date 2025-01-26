@@ -1,4 +1,3 @@
-#include <RtMidi.h>
 #include <SFML/Graphics.hpp>
 #include <SFML/System.hpp>
 
@@ -27,7 +26,7 @@ bool playT = false;
 bool playing = true;
 
 float Tempo;
-double fps = 60.0;
+double FPS = 60.0;
 
 sf::Color midiColors[16] = {
     sf::Color(255, 87, 34),  // Red-Orange
@@ -68,11 +67,10 @@ int displaySelectionScreen()
   Label name; name.x = 5; name.y = 5; name.size = 80; name.text = "TriMIDI"; name.color = sf::Color::White; name.InitText(thiccfont);
   Label version; version.x = 330; version.y = 5; version.size = 20; version.text = "v.1.4"; version.color = sf::Color::White; version.InitText(font);
 
-  Button start; start.x = 1190; start.y = 10; start.w = 400; start.h = 30; start.LabelText = "Start"; start.Locked = sf::Color(0, 127, 0); start.Open = sf::Color(0, 200, 0); start.Hover = sf::Color(0, 255, 0);
-  Button exit; exit.x = 1190; exit.y = 50; exit.w = 400; exit.h = 30; exit.LabelText = "Exit"; exit.Locked = sf::Color(127, 0, 0); exit.Open = sf::Color(200, 0, 0); exit.Hover = sf::Color(255, 0, 0);
+  Button start; start.x = 1190; start.y = 10; start.w = 400; start.h = 30; start.LabelText = "Start"; start.Locked = sf::Color(0, 100, 0); start.Open = sf::Color(0, 150, 0); start.Hover = sf::Color(0, 200, 0); start.mode = 0; start.centerAllign = true;
+  Button exit; exit.x = 1190; exit.y = 50; exit.w = 400; exit.h = 30; exit.LabelText = "Exit"; exit.Locked = sf::Color(100, 0, 0); exit.Open = sf::Color(150, 0, 0); exit.Hover = sf::Color(200, 0, 0); exit.mode = 1; exit.centerAllign = true;
 
-  Button selection; selection.Locked = sf::Color(0, 0, 127); selection.Open = sf::Color(0, 0, 200); selection.Hover = sf::Color(0, 0, 255);
-  Sprite midi; midi.InitSprite(sf::IntRect(32, 98, 9, 9));
+  Button selection; selection.Locked = sf::Color(0, 0, 100); selection.Open = sf::Color(0, 0, 150); selection.Hover = sf::Color(0, 0, 200);
 
   Label selectionError; selectionError.color = sf::Color::White; selectionError.size = 20; selectionError.allign = "c";
 
@@ -145,14 +143,14 @@ int displaySelectionScreen()
       for (int i = 0; i < files.size(); i++)
       {
         selection.mode = 0;
+        if(selectedFile == i)
+          selection.mode = 1;
         if (inside(40, 800, i * 21 + 100, i * 21 + 120))
         {
           selection.mode = 2;
           if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
             selectedFile = i;
         }
-        if(selectedFile = i)
-          selection.mode = 1;
         selection.x = 40; selection.y = i * 21 + 100; selection.w = 760; selection.h = 20; selection.LabelText = files[i]; selection.textOffset = 0;
         selection.InitButton();
         selection.DrawButton(select);
@@ -172,19 +170,17 @@ int displaySelectionScreen()
       for (int i = 0; i < MIDIDevices.size(); i++)
       {
         selection.mode = 0;
+        if(selectedDevice == i)
+          selection.mode = 1;
         if (m.x > 840 && m.x < 1560 && m.y > i * 21 + 100 && m.y < i * 21 + 120)
         {
           selection.mode = 2;
           if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
             selectedDevice = i;
         }
-        if(selectedDevice = i)
-          selection.mode = 1;
-        selection.x = 840; selection.y = i * 21 + 100; selection.w = 760; selection.h = 20; selection.LabelText = MIDIDevices[i]; selection.textOffset = 25;
+        selection.x = 840; selection.y = i * 21 + 100; selection.w = 760; selection.h = 20; selection.LabelText = MIDIDevices[i]; selection.textOffset = 0;
         selection.InitButton();
         selection.DrawButton(select);
-        midi.InitSprite(sf::IntRect(32, 98, 9, 9)); midi.x = 841; midi.y = i * 21 + 101; midi.scale = 2;
-        midi.DrawSprite(select);
       }
     }
     else
@@ -203,12 +199,33 @@ int displaySelectionScreen()
 
 int displayPlayerScreen()
 {
+  Rectangle background; background.x = 10; background.y = 10; background.w = 1560; background.h = 250; background.color = sf::Color(15, 15, 15); background.InitRect();
+  Sprite grid; grid.x = 20; grid.y = 20; grid.scale = 2; grid.InitSprite(sf::IntRect(0, 0, 769, 97));
+
+  Label bpm; bpm.x = 20; bpm.y = 210; bpm.size = 32; bpm.color = sf::Color::White; bpm.allign = "l";
+  Label fps; fps.x = 1200; fps.y = 210; fps.size = 32; fps.color = sf::Color::White; fps.allign = "l";
+
+  Rectangle scrubBackground; scrubBackground.x = 10; scrubBackground.y = 270; scrubBackground.w = 1560; scrubBackground.h = 20; scrubBackground.color = sf::Color(60, 60, 60); scrubBackground.InitRect();
+
+  Sprite marker; marker.scale = 2;
+
+  Sprite play; play.x = 20; play.y = 310; play.scale = 4;
+  Sprite stop; stop.x = 20; stop.y = 310; stop.scale = 4;
+
+  Rectangle note; note.w = 10; note.h = 10;
+
+  Sprite speed; speed.x = 80; speed.y = 310; speed.scale = 4; speed.InitSprite(sf::IntRect(42, 98, 93, 11));
+  Label speedLabel; speedLabel.x = 80; speedLabel.y = 360; speedLabel.size = 32; speedLabel.color = sf::Color::White; speedLabel.allign = "l";
+  Circle speedSetting; speedSetting.color = sf::Color(255, 0, 0); speedSetting.y = 332; speedSetting.r = 10;
+
+  Button back; back.x = 10; back.y = 930; back.w = 400; back.h = 60; back.LabelText = "Back"; back.Open = sf::Color(200, 0, 0); back.Hover = sf::Color(255, 0, 0); back.mode = 1; back.centerAllign = true; back.InitButton();
+
   uint64_t actualNoteCount = 0;
   sf::RenderWindow window(sf::VideoMode(1600, 1000), "Player", sf::Style::Titlebar);
   cout << "Render start" << endl;
   window.setVerticalSyncEnabled(true);
 
-  globalLength = midiData[midiData.size() - 1][0];
+  globalLength = midiData[midiData.size() - 2];
   float step = 1540.0 / (float)globalLength;
 
   while (window.isOpen())
@@ -233,14 +250,21 @@ int displayPlayerScreen()
 
     window.clear();
 
-    window.draw(drawRect(10, 10, 1560, 250, Color(15, 15, 15)));
-    window.draw(drawSprite(grid, 20, 20, 2));
+    background.DrawRect(window);
+    grid.DrawSprite(window);
 
-    window.draw(drawText(font, 20, 210, 32, to_string((int)Tempo) + " BPM (" + to_string((int)Tempo * speeds[speedIndex]) + ")", sf::Color::White, "l"));
-    window.draw(drawText(font, 1200, 210, 32, to_string((int)fps) + "FPS", sf::Color::White, "l"));
-    window.draw(drawRect(10, 270, 1560, 20, Color(60, 60, 60)));
+    bpm.text = to_string((int)Tempo) + " BPM (" + to_string((int)Tempo * speeds[speedIndex]) + ")"; bpm.InitText(font);
+    bpm.DrawText(window);
+
+    fps.text = to_string((int)FPS) + "FPS"; fps.InitText(font);
+    fps.DrawText(window);
+
+    scrubBackground.DrawRect(window);
     int x = ((float)step * (float)MIDITime) + 10;
-    window.draw(drawSprite(marker, x - 6, 270, 2));
+    marker.x = x - 6; 
+    marker.y = 270;
+    marker.InitSprite(sf::IntRect(24, 98, 7, 11));
+    marker.DrawSprite(window);
     if (inside(x - 10, x + 10, 260, 280) || seekT)
     {
       if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
@@ -249,9 +273,9 @@ int displayPlayerScreen()
           stopAllNotes(midiOut);
         playing = false;
         MIDITime = (float)(m.x - 10) / (float)step;
-        while (midiData[globalIndex][0] < MIDITime)
+        while (midiData[globalIndex << 1] < MIDITime)
           globalIndex++;
-        while (midiData[globalIndex][0] > MIDITime)
+        while (midiData[globalIndex << 1] > MIDITime)
           globalIndex--;
       }
       seekT = sf::Mouse::isButtonPressed(sf::Mouse::Left);
@@ -262,32 +286,45 @@ int displayPlayerScreen()
       {
         if (activeNotes[i][j])
         {
-          window.draw(drawRect(22 + (j * 12), 22 + (i * 12), 10, 10, midiColors[i]));
+          note.x = 22 + (j * 12);
+          note.y = 22 + (i * 12);
+          note.color = midiColors[i];
+          note.InitRect();
+          note.DrawRect(window);
         }
       }
     }
 
     if (inside(20, 64, 310, 354) && !seekT)
     {
-      stop.setColor(Color(160, 160, 160));
-      play.setColor(Color(160, 160, 160));
+      stop.color = sf::Color(160, 160, 160);
+      play.color = sf::Color(160, 160, 160);
       if (sf::Mouse::isButtonPressed(sf::Mouse::Left) && !playT)
         playing = !playing;
       playT = sf::Mouse::isButtonPressed(sf::Mouse::Left);
     }
 
-    if (playing)
-      window.draw(drawSprite(stop, 20, 310, 4));
-    else
-      window.draw(drawSprite(play, 20, 310, 4));
+    if (playing){
+      stop.InitSprite(sf::IntRect(12, 98, 11, 11));
+      stop.DrawSprite(window);
+    } else{
+      play.InitSprite(sf::IntRect(0, 98, 11, 11));
+      play.DrawSprite(window);
+    }
 
-    play.setColor(Color(255, 255, 255));
-    stop.setColor(Color(255, 255, 255));
+    play.color = sf::Color(255, 255, 255);
+    stop.color = sf::Color(255, 255, 255);
 
-    window.draw(drawSprite(speed, 80, 310, 4));
-    window.draw(drawText(font, 80, 360, 32, speedNames[speedIndex], Color::White, "l"));
-    x = (speedIndex * 40) + 126;
-    window.draw(drawCircle(x, 332, 10, sf::Color::Red));
+    speed.DrawSprite(window);
+
+    speedLabel.text = speedNames[speedIndex];
+    speedLabel.InitText(font);
+    speedLabel.DrawText(window);
+
+    speedSetting.x = speedX[speedIndex];
+    speedSetting.InitCircle();
+    speedSetting.DrawCircle(window);
+
     if (inside(80, 452, 310, 354) && !seekT)
     {
       if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
@@ -304,27 +341,26 @@ int displayPlayerScreen()
       }
     }
 
-    bool backHover = false;
+    back.mode = 1;
     if (inside(10, 410, 930, 990))
     {
-      backHover = true;
+      back.mode = 2;
       if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
       {
         return 1;
       }
     }
-    window.draw(drawRect(10, 930, 400, 60, Color(100 + (backHover * 50), 0, 0)));
-    window.draw(drawText(thiccfont, 210, 940, 32, "Back", sf::Color::White, "c"));
+    back.DrawButton(window);
 
     window.display();
 
     if (playing)
-      MIDITime += (((double)Tempo * (double)PPQN) / 60.f) * (1.f / (double)fps) * (double)speeds[speedIndex];
+      MIDITime += (((double)Tempo * (double)PPQN) / 60.f) * (1.f / (double)FPS) * (double)speeds[speedIndex];
     MIDITime = min(MIDITime, (uint64_t)globalLength);
 
-    while (midiData[globalIndex][0] <= MIDITime && playing)
+    while (midiData[globalIndex << 1] <= MIDITime && playing)
     {
-      thirdytwo2eight(midiData[globalIndex][1]);
+      thirdytwo2eight(midiData[(globalIndex << 1) + 1]);
       if (byte1 < 16 && byte4 != 0xFF)
       { // note event
         if (byte4)
@@ -353,9 +389,9 @@ int displayPlayerScreen()
       globalIndex++;
     }
 
-    fps = 0.96 / measure.restart().asSeconds();
-    if (fps < 10.0)
-      fps = 60.0;
+    FPS = 0.96 / measure.restart().asSeconds();
+    if (FPS < 10.0)
+      FPS = 60.0;
   }
   stopAllNotes(midiOut);
   return 0;

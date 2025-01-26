@@ -6,7 +6,7 @@
 using namespace std;
 
 vector<u8> MD;
-vector<vector<uint64_t>> midiData; // timestamp, data
+vector<uint64_t> midiData; // timestamp, data
 // if first byte is lower than 16 then data is (channel | note | velocity | on/off)
 // if first byte is higher than 16 then data is (value index, channel, value, 0)
 // if last byte is 0XFF then data is (tempo, tempo, tempo, 0xFF)
@@ -51,7 +51,8 @@ void getMeta()
   switch (MD[rI])
   {
   case 0x51:
-    midiData.push_back({trackTime, (eight2twentyfour(MD[rI + 2], MD[rI + 3], MD[rI + 4]) << 8) | 0xFF});
+    midiData.push_back(trackTime);
+    midiData.push_back((eight2twentyfour(MD[rI + 2], MD[rI + 3], MD[rI + 4]) << 8) | 0xFF);
     break;
   }
   rI++;
@@ -70,17 +71,20 @@ void getEvent()
   switch (eventType)
   {
   case 0b1000: // note off
-    midiData.push_back({trackTime, eight2thirtytwo(channel, MD[rI], MD[rI + 1], 0)});
+    midiData.push_back(trackTime);
+    midiData.push_back(eight2thirtytwo(channel, MD[rI], MD[rI + 1], 0));
     rI += 2;
     break;
   case 0b1001: // note on
     if (MD[rI + 1] == 0)
     {
-      midiData.push_back({trackTime, eight2thirtytwo(channel, MD[rI], MD[rI + 1], 0)});
+      midiData.push_back(trackTime);
+      midiData.push_back(eight2thirtytwo(channel, MD[rI], MD[rI + 1], 0));
     }
     else
     {
-      midiData.push_back({trackTime, eight2thirtytwo(channel, MD[rI], MD[rI + 1], 1)});
+      midiData.push_back(trackTime);
+      midiData.push_back(eight2thirtytwo(channel, MD[rI], MD[rI + 1], 1));
     }
     rI += 2;
     break;
@@ -91,7 +95,8 @@ void getEvent()
     rI += 2;
     break;
   case 0b1100: // program change
-    midiData.push_back({trackTime, eight2thirtytwo(16, channel, MD[rI], 0)});
+    midiData.push_back(trackTime);
+    midiData.push_back(eight2thirtytwo(16, channel, MD[rI], 0));
     rI += 1;
     break;
   case 0b1101: // channel pressure

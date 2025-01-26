@@ -19,7 +19,11 @@ else()
     message(FATAL_ERROR "Failed to configure RtMidi.")
 endif()
 
-add_executable(TriMIDI ./src/main.cpp)
+add_executable(TriMIDI ./src/main.cpp )
+
+target_sources(TriMIDI PRIVATE
+    ./src/drawFunctions.cpp
+)
 
 target_link_libraries(TriMIDI PRIVATE 
     sfml-system 
