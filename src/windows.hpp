@@ -8,10 +8,8 @@
 
 RtMidiOut midiOut;
 
-using namespace sf;
-
-Clock measure;
-Vector2i m;
+sf::Clock measure;
+sf::Vector2i m;
 
 vector<string> files;
 uint64_t globalIndex;
@@ -31,23 +29,23 @@ bool playing = true;
 float Tempo;
 double fps = 60.0;
 
-Color midiColors[16] = {
-    Color(255, 87, 34),  // Red-Orange
-    Color(76, 175, 80),  // Green
-    Color(33, 150, 243), // Blue
-    Color(255, 235, 59), // Yellow
-    Color(156, 39, 176), // Purple
-    Color(244, 67, 54),  // Red
-    Color(0, 188, 212),  // Cyan
-    Color(205, 220, 57), // Lime
-    Color(121, 85, 72),  // Brown
-    Color(255, 193, 7),  // Amber
-    Color(63, 81, 181),  // Indigo
-    Color(139, 195, 74), // Light Green
-    Color(255, 152, 0),  // Orange
-    Color(103, 58, 183), // Deep Purple
-    Color(96, 125, 139), // Blue Grey
-    Color(233, 30, 99)   // Pink
+sf::Color midiColors[16] = {
+    sf::Color(255, 87, 34),  // Red-Orange
+    sf::Color(76, 175, 80),  // Green
+    sf::Color(33, 150, 243), // Blue
+    sf::Color(255, 235, 59), // Yellow
+    sf::Color(156, 39, 176), // Purple
+    sf::Color(244, 67, 54),  // Red
+    sf::Color(0, 188, 212),  // Cyan
+    sf::Color(205, 220, 57), // Lime
+    sf::Color(121, 85, 72),  // Brown
+    sf::Color(255, 193, 7),  // Amber
+    sf::Color(63, 81, 181),  // Indigo
+    sf::Color(139, 195, 74), // Light Green
+    sf::Color(255, 152, 0),  // Orange
+    sf::Color(103, 58, 183), // Deep Purple
+    sf::Color(96, 125, 139), // Blue Grey
+    sf::Color(233, 30, 99)   // Pink
 };
 
 float speeds[8] = {0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2};
@@ -62,7 +60,25 @@ bool inside(int x1, int x2, int y1, int y2)
 
 int displaySelectionScreen()
 {
-  RenderWindow select(VideoMode(1600, 1000), "Selection Screen", Style::Titlebar);
+  font.loadFromFile("./assets/SourceCodePro-light.ttf");
+  thiccfont.loadFromFile("./assets/SourceCodePro-Black.ttf");
+  if (!texture.loadFromFile("./assets/texture.png"))
+    cerr << "Failed to load texture" << endl;
+
+  Label name; name.x = 5; name.y = 5; name.size = 80; name.text = "TriMIDI"; name.color = sf::Color::White; name.InitText(thiccfont);
+  Label version; version.x = 330; version.y = 5; version.size = 20; version.text = "v.1.4"; version.color = sf::Color::White; version.InitText(font);
+
+  Button start; start.x = 1190; start.y = 10; start.w = 400; start.h = 30; start.LabelText = "Start"; start.Locked = sf::Color(0, 127, 0); start.Open = sf::Color(0, 200, 0); start.Hover = sf::Color(0, 255, 0);
+  Button exit; exit.x = 1190; exit.y = 50; exit.w = 400; exit.h = 30; exit.LabelText = "Exit"; exit.Locked = sf::Color(127, 0, 0); exit.Open = sf::Color(200, 0, 0); exit.Hover = sf::Color(255, 0, 0);
+
+  Button selection; selection.Locked = sf::Color(0, 0, 127); selection.Open = sf::Color(0, 0, 200); selection.Hover = sf::Color(0, 0, 255);
+  Sprite midi; midi.InitSprite(sf::IntRect(32, 98, 9, 9));
+
+  Label selectionError; selectionError.color = sf::Color::White; selectionError.size = 20; selectionError.allign = "c";
+
+  Rectangle bar; bar.x = 5; bar.y = 90; bar.w = 1590; bar.h = 1; bar.color = sf::Color::White; bar.InitRect(); 
+
+  sf::RenderWindow select(sf::VideoMode(1600, 1000), "Selection Screen", sf::Style::Titlebar);
 
   select.setFramerateLimit(60);
 
@@ -70,98 +86,114 @@ int displaySelectionScreen()
 
   while (select.isOpen())
   {
-    Event event;
+    sf::Event event;
     while (select.pollEvent(event))
     {
-      if (event.type == Event::Closed)
+      if (event.type == sf::Event::Closed)
       {
         select.close();
         return 0;
       }
     }
-    if (Keyboard::isKeyPressed(Keyboard::Escape))
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape))
     {
       select.close();
       return 0;
     }
+    
     select.clear();
 
-    m = Mouse::getPosition(select);
+    m = sf::Mouse::getPosition(select);
 
-    bool startHover = false, exitHover = false;
-
-    if (inside(1180, 1580, 10, 40) && (files.size() > 0 && MIDIDevices.size() > 0 && selectedDevice != -1 && selectedFile != -1))
+    start.mode = 1;
+    if (inside(1180, 1580, 10, 40))
     {
-      startHover = true;
-      if (Mouse::isButtonPressed(Mouse::Left))
+      start.mode = 2;
+      if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
       {
         select.close();
         return 1;
       }
+    } else if(files.size() == 0 || MIDIDevices.size() == 0 || selectedDevice == -1 || selectedFile == -1){
+      start.mode = 0;
     }
 
+
+    exit.mode = 1;
     if (inside(1180, 1580, 50, 80))
     {
-      exitHover = true;
-      if (Mouse::isButtonPressed(Mouse::Left))
+      exit.mode = 2;
+      if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
       {
         return 0;
       }
     }
 
-    select.draw(drawRect(5, 90, 1590, 1, Color::White));
-    select.draw(drawText(thiccfont, 5, 5, 80, "TriMIDI", Color::White, "l"));
-    select.draw(drawText(font, 330, 5, 20, "v.1.4", Color::White, "l"));
+    bar.DrawRect(select);
 
-    select.draw(drawRect(1190, 10, 400, 30, Color(0, 100 + (startHover * 50) - ((files.size() == 0 || MIDIDevices.size() == 0 || selectedDevice == -1 || selectedFile == -1) * 50), 0)));
-    select.draw(drawRect(1190, 50, 400, 30, Color(100 + (exitHover * 50), 0, 0)));
+    name.DrawText(select);
+    version.DrawText(select);
 
-    select.draw(drawText(thiccfont, 1390, 16, 16, "Start", Color::White, "c"));
-    select.draw(drawText(thiccfont, 1390, 56, 16, "Exit", Color::White, "c"));
+    start.InitButton();
+    exit.InitButton();
+    start.DrawButton(select);
+    exit.DrawButton(select);
+
 
     if (files.size() > 0)
     {
       for (int i = 0; i < files.size(); i++)
       {
-        bool hover = false;
-        if (m.x > 40 && m.x < 800 && m.y > i * 21 + 100 && m.y < i * 21 + 120)
+        selection.mode = 0;
+        if (inside(40, 800, i * 21 + 100, i * 21 + 120))
         {
-          hover = true;
-          if (Mouse::isButtonPressed(Mouse::Left))
-          {
+          selection.mode = 2;
+          if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
             selectedFile = i;
-          }
         }
-        select.draw(drawRect(40, i * 21 + 100, 760, 20, Color(0, 0, 127 + (hover * 50) + ((i == selectedFile) * 70))));
-        select.draw(drawText(font, 40, i * 21 + 100, 18, files[i], Color::White, "l"));
+        if(selectedFile = i)
+          selection.mode = 1;
+        selection.x = 40; selection.y = i * 21 + 100; selection.w = 760; selection.h = 20; selection.LabelText = files[i]; selection.textOffset = 0;
+        selection.InitButton();
+        selection.DrawButton(select);
       }
     }
     else
     {
-      select.draw(drawText(thiccfont, 400, 120, 20, "No MIDI Files Found", Color::White, "l"));
+      selectionError.text = "No MIDI Files Found";
+      selectionError.x = 400;
+      selectionError.y = 120;
+      selectionError.InitText(thiccfont);
+      selectionError.DrawText(select);
     }
 
     if (MIDIDevices.size() > 0)
     {
       for (int i = 0; i < MIDIDevices.size(); i++)
       {
-        bool hover = false;
+        selection.mode = 0;
         if (m.x > 840 && m.x < 1560 && m.y > i * 21 + 100 && m.y < i * 21 + 120)
         {
-          hover = true;
-          if (Mouse::isButtonPressed(Mouse::Left))
-          {
+          selection.mode = 2;
+          if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
             selectedDevice = i;
-          }
         }
-        select.draw(drawRect(840, i * 21 + 100, 720, 20, Color(0, 0, 127 + (hover * 50) + ((i == selectedDevice) * 70))));
-        select.draw(drawText(font, 865, i * 21 + 100, 18, MIDIDevices[i], Color::White, "l"));
-        select.draw(drawSprite(midi, 841, i * 21 + 101, 2));
+        if(selectedDevice = i)
+          selection.mode = 1;
+        selection.x = 840; selection.y = i * 21 + 100; selection.w = 760; selection.h = 20; selection.LabelText = MIDIDevices[i]; selection.textOffset = 25;
+        selection.InitButton();
+        selection.DrawButton(select);
+        midi.InitSprite(sf::IntRect(32, 98, 9, 9)); midi.x = 841; midi.y = i * 21 + 101; midi.scale = 2;
+        midi.DrawSprite(select);
       }
     }
     else
     {
-      select.draw(drawText(thiccfont, 1150, 120, 20, "No MIDI Devices Found", Color::White, "l"));
+      selectionError.text = "No MIDI Devices Found";
+      selectionError.x = 1150;
+      selectionError.y = 120;
+      selectionError.InitText(thiccfont);
+      selectionError.DrawText(select);
     }
 
     select.display();
@@ -172,7 +204,7 @@ int displaySelectionScreen()
 int displayPlayerScreen()
 {
   uint64_t actualNoteCount = 0;
-  RenderWindow window(VideoMode(1600, 1000), "Player", Style::Titlebar);
+  sf::RenderWindow window(sf::VideoMode(1600, 1000), "Player", sf::Style::Titlebar);
   cout << "Render start" << endl;
   window.setVerticalSyncEnabled(true);
 
@@ -181,37 +213,37 @@ int displayPlayerScreen()
 
   while (window.isOpen())
   {
-    Event event;
+    sf::Event event;
     while (window.pollEvent(event))
     {
-      if (event.type == Event::Closed)
+      if (event.type == sf::Event::Closed)
       {
         window.close();
         stopAllNotes(midiOut);
         return 0;
       }
     }
-    if (Keyboard::isKeyPressed(Keyboard::Escape))
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape))
     {
       window.close();
       return 0;
     }
 
-    m = Mouse::getPosition(window);
+    m = sf::Mouse::getPosition(window);
 
     window.clear();
 
     window.draw(drawRect(10, 10, 1560, 250, Color(15, 15, 15)));
     window.draw(drawSprite(grid, 20, 20, 2));
 
-    window.draw(drawText(font, 20, 210, 32, to_string((int)Tempo) + " BPM (" + to_string((int)Tempo * speeds[speedIndex]) + ")", Color::White, "l"));
-    window.draw(drawText(font, 1200, 210, 32, to_string((int)fps) + "FPS", Color::White, "l"));
+    window.draw(drawText(font, 20, 210, 32, to_string((int)Tempo) + " BPM (" + to_string((int)Tempo * speeds[speedIndex]) + ")", sf::Color::White, "l"));
+    window.draw(drawText(font, 1200, 210, 32, to_string((int)fps) + "FPS", sf::Color::White, "l"));
     window.draw(drawRect(10, 270, 1560, 20, Color(60, 60, 60)));
     int x = ((float)step * (float)MIDITime) + 10;
     window.draw(drawSprite(marker, x - 6, 270, 2));
     if (inside(x - 10, x + 10, 260, 280) || seekT)
     {
-      if (Mouse::isButtonPressed(Mouse::Left))
+      if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
       {
         if (!seekT)
           stopAllNotes(midiOut);
@@ -222,7 +254,7 @@ int displayPlayerScreen()
         while (midiData[globalIndex][0] > MIDITime)
           globalIndex--;
       }
-      seekT = Mouse::isButtonPressed(Mouse::Left);
+      seekT = sf::Mouse::isButtonPressed(sf::Mouse::Left);
     }
     for (int i = 0; i < 16; i++)
     {
@@ -239,9 +271,9 @@ int displayPlayerScreen()
     {
       stop.setColor(Color(160, 160, 160));
       play.setColor(Color(160, 160, 160));
-      if (Mouse::isButtonPressed(Mouse::Left) && !playT)
+      if (sf::Mouse::isButtonPressed(sf::Mouse::Left) && !playT)
         playing = !playing;
-      playT = Mouse::isButtonPressed(Mouse::Left);
+      playT = sf::Mouse::isButtonPressed(sf::Mouse::Left);
     }
 
     if (playing)
@@ -255,10 +287,10 @@ int displayPlayerScreen()
     window.draw(drawSprite(speed, 80, 310, 4));
     window.draw(drawText(font, 80, 360, 32, speedNames[speedIndex], Color::White, "l"));
     x = (speedIndex * 40) + 126;
-    window.draw(drawCircle(x, 332, 10, Color::Red));
+    window.draw(drawCircle(x, 332, 10, sf::Color::Red));
     if (inside(80, 452, 310, 354) && !seekT)
     {
-      if (Mouse::isButtonPressed(Mouse::Left))
+      if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
       {
         int lowestIndex = 8;
         for (int i = 0; i < 8; i++)
@@ -276,13 +308,13 @@ int displayPlayerScreen()
     if (inside(10, 410, 930, 990))
     {
       backHover = true;
-      if (Mouse::isButtonPressed(Mouse::Left))
+      if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
       {
         return 1;
       }
     }
     window.draw(drawRect(10, 930, 400, 60, Color(100 + (backHover * 50), 0, 0)));
-    window.draw(drawText(thiccfont, 210, 940, 32, "Back", Color::White, "c"));
+    window.draw(drawText(thiccfont, 210, 940, 32, "Back", sf::Color::White, "c"));
 
     window.display();
 

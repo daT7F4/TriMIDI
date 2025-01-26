@@ -1,69 +1,73 @@
-#include <SFML/Graphics.hpp>
 #include <string>
 #include <vector>
+#include <iostream>
+#include <string>
+
+#ifndef DRAWFUNCTIONS_HPP
+#define DRAWFUNCTIONS_HPP
 
 using namespace std;
-using namespace sf;
 
-Font font, thiccfont;
-Texture texture;
-Sprite grid, grid2, play, stop, marker, midi, speed;
+sf::Font font, thiccfont;
+sf::Texture texture;
 
-void initFont()
-{
-  font.loadFromFile("./assets/SourceCodePro-light.ttf");
-  thiccfont.loadFromFile("./assets/SourceCodePro-Black.ttf");
-}
+class Button{
+  public:
+    int x, textOffset, y, w, h, mode; // 0 - Locked, 1 - Open, 2 - Hover
+    bool centerAllign;
+    string LabelText;
+    sf::Color Locked, Open, Hover;
+    void InitButton();
+    void DrawButton(sf::RenderWindow &window);
+  private:
+    sf::RectangleShape button;
+    sf::Text Label;
+};
 
-Text drawText(Font &font ,int x, int y, int size, string t, Color color, string allign)
-{
-  Text text;
-  text.setFont(font);
-  text.setString(t);
-  text.setCharacterSize(size);
-  text.setFillColor(color);
-  FloatRect bounds = text.getLocalBounds();
-  if(allign == "l"){
-     text.setPosition(Vector2f(x, y));
-  } else if(allign == "c"){
-    text.setPosition(Vector2f(x - ((int)bounds.width / 2), y));
-  } else if(allign == "r"){
-    text.setPosition(Vector2f(x - bounds.width, y));
-  }
-  return text;
-}
+class Label{
+  public: 
+    int x, y, size;
+    string text, allign;
+    sf::Color color;
+    void InitText(sf::Font &font);
+    void DrawText(sf::RenderWindow &window);
+  private:
+    sf::Text Label;
+};
 
-RectangleShape background(int x, int y, int w, int h)
-{
-  RectangleShape ground;
-  ground.setPosition(Vector2f(x, y));
-  ground.setSize(Vector2f(w, h));
-  ground.setFillColor(Color(50, 50, 50, 150));
-  return ground;
-}
+class Circle{
+  public:
+    int x, y, r;
+    sf::Color color;
+    void InitCircle();
+    void DrawCircle(sf::RenderWindow &window);
+  private:
+    sf::CircleShape circle;
+};
 
-CircleShape drawCircle(int x, int y, int r, Color color)
-{
-  CircleShape circle(r);
-  circle.setPosition(Vector2f(x - r, y - r));
-  circle.setFillColor(color);
-  return circle;
-}
+class Rectangle{
+  public:
+    int x, y, w, h;
+    sf::Color color;
+    void InitRect();
+    void DrawRect(sf::RenderWindow &window);
+  private:
+    sf::RectangleShape rectangle;
+};
 
-RectangleShape drawRect(int x, int y, int w, int h, Color color)
-{
-  RectangleShape rect;
-  rect.setPosition(Vector2f(x, y));
-  rect.setSize(Vector2f(w, h));
-  rect.setFillColor(color);
-  return rect;
-}
+class Sprite{
+  public:
+    int x, y, scale;
+    void InitSprite(sf::IntRect spriteRect);
+    void DrawSprite(sf::RenderWindow &window);
+  private:
+    sf::Sprite sprite;
+};
+
+/*
 
 void loadSprites(){
-  if (!texture.loadFromFile("./assets/texture.png"))
-  {
-    cerr << "Failed to load texture" << endl;
-  }
+  
   grid.setTexture(texture);
   grid.setTextureRect(IntRect(0, 0, 769, 97));
   play.setTexture(texture);
@@ -78,9 +82,7 @@ void loadSprites(){
   speed.setTextureRect(IntRect(42, 98, 93, 11));
 }
 
-Sprite drawSprite(Sprite &sprite, int x, int y, float scale){
-  sprite.setPosition(Vector2f(x, y));
-  sprite.setScale(Vector2f(scale, scale));
-  return sprite;
-}
+*/
+
+#endif;
 
