@@ -34,6 +34,7 @@ Automatic installation can be done using the command
 make install-deps
 ```
 
+* sfml (if sfml is installed with something like brew all the other dependencies will be preinstalled)
 * libflac-dev
 * libvorbis-dev
 * libopenal-dev
