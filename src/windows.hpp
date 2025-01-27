@@ -49,7 +49,7 @@ sf::Color midiColors[16] = {
 
 float speeds[8] = {0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2};
 string speedNames[8] = {"0.25x", "0.5x", "0.75x", "1x", "1.25x", "1.5x", "1.75x", "2x"};
-int speedX[9] = {124, 168, 212, 256, 300, 344, 388, 432, 800};
+int speedX[9] = {124, 164, 205, 247, 286, 326, 367, 407, 448};
 int speedIndex = 3;
 
 bool inside(int x1, int x2, int y1, int y2)
@@ -65,7 +65,7 @@ int displaySelectionScreen()
     cerr << "Failed to load texture" << endl;
 
   Label name; name.x = 5; name.y = 5; name.size = 80; name.text = "TriMIDI"; name.color = sf::Color::White; name.InitText(thiccfont);
-  Label version; version.x = 330; version.y = 5; version.size = 20; version.text = "v.1.4"; version.color = sf::Color::White; version.InitText(font);
+  Label version; version.x = 330; version.y = 5; version.size = 20; version.text = "v.1.5"; version.color = sf::Color::White; version.InitText(font);
 
   Button start; start.x = 1190; start.y = 10; start.w = 400; start.h = 30; start.LabelText = "Start"; start.Locked = sf::Color(0, 100, 0); start.Open = sf::Color(0, 150, 0); start.Hover = sf::Color(0, 200, 0); start.mode = 0; start.centerAllign = true;
   Button exit; exit.x = 1190; exit.y = 50; exit.w = 400; exit.h = 30; exit.LabelText = "Exit"; exit.Locked = sf::Color(100, 0, 0); exit.Open = sf::Color(150, 0, 0); exit.Hover = sf::Color(200, 0, 0); exit.mode = 1; exit.centerAllign = true;
@@ -225,7 +225,8 @@ int displayPlayerScreen()
   cout << "Render start" << endl;
   window.setVerticalSyncEnabled(true);
 
-  globalLength = midiData[midiData.size() - 2];
+  sixtyfour2thridytwo(midiData[midiData.size() - 1]);
+  globalLength = int1;
   float step = 1540.0 / (float)globalLength;
 
   while (window.isOpen())
@@ -273,10 +274,14 @@ int displayPlayerScreen()
           stopAllNotes(midiOut);
         playing = false;
         MIDITime = (float)(m.x - 10) / (float)step;
-        while (midiData[globalIndex << 1] < MIDITime)
+        while (int1 < MIDITime){
           globalIndex++;
-        while (midiData[globalIndex << 1] > MIDITime)
+          sixtyfour2thridytwo(midiData[globalIndex]);
+        }
+        while (int1 > MIDITime){
           globalIndex--;
+          sixtyfour2thridytwo(midiData[globalIndex]);
+        }
       }
       seekT = sf::Mouse::isButtonPressed(sf::Mouse::Left);
     }
@@ -358,9 +363,10 @@ int displayPlayerScreen()
       MIDITime += (((double)Tempo * (double)PPQN) / 60.f) * (1.f / (double)FPS) * (double)speeds[speedIndex];
     MIDITime = min(MIDITime, (uint64_t)globalLength);
 
-    while (midiData[globalIndex << 1] <= MIDITime && playing)
+    sixtyfour2thridytwo(midiData[globalIndex]);
+    while (int1 < MIDITime && playing)
     {
-      thirdytwo2eight(midiData[(globalIndex << 1) + 1]);
+      thirdytwo2eight(int2);
       if (byte1 < 16 && byte4 != 0xFF)
       { // note event
         if (byte4)
@@ -387,6 +393,7 @@ int displayPlayerScreen()
         Tempo = 60000000.f / (byte1 << 16 | byte2 << 8 | byte3);
       }
       globalIndex++;
+      sixtyfour2thridytwo(midiData[globalIndex]);
     }
 
     FPS = 0.96 / measure.restart().asSeconds();

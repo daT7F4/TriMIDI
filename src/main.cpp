@@ -10,15 +10,11 @@
 
 #include "windows.hpp"
 
-#define u8 uint8_t
-#define u32 uint32_t
-#define OFFSET 100
-
 using namespace std;
 namespace fs = filesystem;
 
-u8 header[8] = {0x4D, 0x54, 0x68, 0x64, 0x00, 0x00, 0x00, 0x06};
-u8 trackHeader[4] = {0x4D, 0x54, 0x72, 0x6B};
+uint8_t header[8] = {0x4D, 0x54, 0x68, 0x64, 0x00, 0x00, 0x00, 0x06};
+uint8_t trackHeader[4] = {0x4D, 0x54, 0x72, 0x6B};
 
 int playingNotes;
 
@@ -45,7 +41,7 @@ int main()
     if (displaySelectionScreen() == 0)
       return 0;
 
-    ifstream file("./midi_files/" + files[selectedFile], ios::binary);
+    file.open("./midi_files/" + files[selectedFile], ios::binary);
 
     if (!file.is_open())
     {
@@ -58,60 +54,62 @@ int main()
     MIDITime = 0;
     globalIndex = 0;
     lastMIDITime = 0;
-    for(int i = 0; i < 128; i++){
-      for(int j = 0; j < 16; j++){
+    for (int i = 0; i < 128; i++)
+    {
+      for (int j = 0; j < 16; j++)
+      {
         activeNotes[j][i] = false;
       }
     }
-    while (file.get(byte))
-    {
-      MD.push_back(static_cast<u8>(byte));
-    }
+    readNextByte(file, BUFFER_SIZE);
 
-    file.close();
+    bufferIndex = 0;
+    rI = 0;
 
     // check header
     for (rI = 0; rI < 8; rI++)
     {
-      if (MD[rI] != header[rI])
+      if (get(rI) != header[rI])
       {
         cerr << "Invalid header" << endl;
-        cerr << "Expected 0x" << hex << uppercase << header[rI] << endl;
-        cerr << "Got 0x" << hex << uppercase << MD[rI] << endl;
+        cerr << "Expected 0x" << hex << uppercase << get(rI) << endl;
+        cerr << "Got 0x" << hex << uppercase << get(rI) << endl;
         return 1;
       }
     }
-    rI += 2;
-    trackCount = eight2sixteen(MD[rI], MD[rI + 1]);
+    readNextByte(file, 8);
+    rI += 2; readNextByte(file, 2);
+    trackCount = eight2sixteen(get(rI), get(rI + 1));
     cout << "Track count: " << trackCount << endl;
-    rI += 2;
-    PPQN = eight2sixteen(MD[rI], MD[rI + 1]);
+    rI += 2; readNextByte(file, 2);
+    PPQN = eight2sixteen(get(rI), get(rI + 1));
     cout << "PPQN: " << PPQN << endl;
-    rI += 2;
+    rI += 2; readNextByte(file, 2);
     for (int track = 0; track < trackCount; track++)
     {
       for (int i = 0; i < 4; i++)
       {
-        if (MD[rI + i] != trackHeader[i])
+        if (get((rI + i) % BUFFER_SIZE) != trackHeader[i])
         {
           cerr << "Invalid track header at 0x" << hex << uppercase << rI + i << endl;
           cerr << "Expected 0x" << hex << uppercase << trackHeader[i] << endl;
-          cerr << "Got 0x" << hex << MD[rI + i] << endl;
+          cerr << "Got 0x" << hex << get((rI + i) % BUFFER_SIZE) << endl;
           return 1;
         }
       }
-      rI += 4;
-      u32 trackLenght =
-          eight2thirtytwo(MD[rI], MD[rI + 1], MD[rI + 2], MD[rI + 3]);
+      rI += 4; readNextByte(file, 4);
+      uint32_t trackLenght =
+          eight2thirtytwo(get(rI), get(rI + 1), get(rI + 2), get(rI + 3));
       cout << "Track #" << track << ", Size: " << trackLenght << " bytes" << endl;
       totalSize += trackLenght;
-      rI += 4;
+      rI += 4; readNextByte(file, 4);
       uint64_t end = rI + trackLenght;
       trackTime = 0;
+      uint64_t lastIndex = 0;
       while (rI < end)
       {
         getDelta();
-        if (MD[rI] == 0xFF)
+        if (get(rI) == 0xFF)
           getMeta();
         else
           getEvent();
@@ -120,38 +118,32 @@ int main()
       }
     }
 
-    vector<pair<uint64_t, uint64_t>> pairs;
-    for (size_t i = 0; i < midiData.size(); i += 2) {
-        pairs.emplace_back(midiData[i], midiData[i + 1]);
-    }
+   std::sort(midiData.begin(), midiData.end(), [](const uint64_t& a, const uint64_t& b) {
+        return (a >> 32) < (b >> 32); // Compare upper 32 bits
+    });
+    midiData.shrink_to_fit();
 
-    sort(pairs.begin(), pairs.end());
-
-    midiData.clear();
-    for (const auto& p : pairs) {
-        midiData.push_back(p.first);
-        midiData.push_back(p.second);
-    }
-
-    pairs.clear();
-
-    cout << "Done decoding " << totalSize / 1000 << " kB" << endl;
-    cout << "Total data length is " << midiData.size() << endl;
-    MD.clear();
+    cout << "Done decoding " << totalSize << " bytes" << endl;
+    cout << "Total allocated size is " << midiData.size() * 8 << " bytes" << endl;
 
     unsigned int nPorts = midiOut.getPortCount();
 
     midiOut.openPort(selectedDevice);
 
-    while(true){
-      thirdytwo2eight(midiData[(globalIndex << 1) + 1]);
-      if(byte4 == 0xFF){
-        Tempo = 60000000.0 / (byte1 << 16 | byte2 << 8 | byte3);
+    while (true)
+    {
+      sixtyfour2thridytwo(midiData[globalIndex]);
+      thirdytwo2eight(int2);
+      if (byte4 == 0xFF)
+      {
+        Tempo = 60000000.0 / eight2twentyfour(byte1, byte2, byte3);
         break;
       }
       globalIndex++;
     }
     globalIndex = 0;
+
+    file.close();
 
     if (displayPlayerScreen() == 0)
       return 0;
