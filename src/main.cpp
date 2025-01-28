@@ -51,8 +51,11 @@ int main()
 
     char byte;
     midiData.clear();
+    tempo.clear();
+    for(int i = 0; i < BUFFER_SIZE; i++){buffer[i] = 0;}
     MIDITime = 0;
     globalIndex = 0;
+    tempoIndex = 0;
     lastMIDITime = 0;
     for (int i = 0; i < 128; i++)
     {
@@ -61,9 +64,9 @@ int main()
         activeNotes[j][i] = false;
       }
     }
+    bufferIndex = 0;
     readNextByte(file, BUFFER_SIZE);
 
-    bufferIndex = 0;
     rI = 0;
 
     // check header
@@ -85,6 +88,7 @@ int main()
     PPQN = eight2sixteen(get(rI), get(rI + 1));
     cout << "PPQN: " << PPQN << endl;
     rI += 2; readNextByte(file, 2);
+    trackIndex = 0;
     for (int track = 0; track < trackCount; track++)
     {
       for (int i = 0; i < 4; i++)
@@ -108,20 +112,25 @@ int main()
       uint64_t lastIndex = 0;
       while (rI < end)
       {
-        getDelta();
+        readDelta();
         if (get(rI) == 0xFF)
-          getMeta();
+          readMeta();
         else
-          getEvent();
+          readEvent();
         if (report)
           return 1;
       }
+      trackIndex++;
     }
 
    std::sort(midiData.begin(), midiData.end(), [](const uint64_t& a, const uint64_t& b) {
         return (a >> 32) < (b >> 32); // Compare upper 32 bits
     });
+    std::sort(tempo.begin(), tempo.end(), [](const uint64_t& a, const uint64_t& b) {
+        return (a >> 32) < (b >> 32); // Compare upper 32 bits
+    });
     midiData.shrink_to_fit();
+    tempo.shrink_to_fit();
 
     cout << "Done decoding " << totalSize << " bytes" << endl;
     cout << "Total allocated size is " << midiData.size() * 8 << " bytes" << endl;
@@ -130,17 +139,10 @@ int main()
 
     midiOut.openPort(selectedDevice);
 
-    while (true)
-    {
-      sixtyfour2thridytwo(midiData[globalIndex]);
-      thirdytwo2eight(int2);
-      if (byte4 == 0xFF)
-      {
-        Tempo = 60000000.0 / eight2twentyfour(byte1, byte2, byte3);
-        break;
-      }
-      globalIndex++;
-    }
+    sixtyfour2thridytwo(tempo[0]);
+    thirdytwo2eight(int2);
+    Tempo = 60000000.0 / eight2twentyfour(byte1, byte2, byte3);
+
     globalIndex = 0;
 
     file.close();
