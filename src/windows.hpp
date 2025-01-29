@@ -19,6 +19,7 @@ uint64_t lastMIDITime;
 uint64_t NotesPerSecond;
 
 bool activeNotes[16][128];
+bool mutedTracks[1024];
 
 int selectedFile = -1;
 int selectedDevice = -1;
@@ -89,7 +90,7 @@ int displaySelectionScreen()
   version.x = 330;
   version.y = 5;
   version.size = 20;
-  version.text = "v.1.5";
+  version.text = "v.1.5.1";
   version.color = sf::Color::White;
   version.InitText(font);
 
@@ -515,10 +516,12 @@ int displayPlayerScreen()
       uint16_t trackNumber = ((byte1 & 0x0F) << 7) | byte4 & 0b01111111;
       if (byte3 != 128)
       { // note event
-        if ((byte4 & 128) >> 7)
-          playNote(midiOut, channel, byte2, byte3);
-        else
+        if ((byte4 & 128) >> 7){
+          if(mutedTracks[trackNumber] == false)
+            playNote(midiOut, channel, byte2, byte3);
+        }else{
           stopNote(midiOut, channel, byte2);
+        }
         activeNotes[channel][byte2] = (byte4 & 128) >> 7;
       }
       else if (byte3 == 128)
