@@ -330,7 +330,7 @@ int displayPlayerScreen()
   speed.scale = 4;
   speed.InitSprite(sf::IntRect(42, 98, 93, 11));
   Label speedLabel;
-  speedLabel.x = 180;
+  speedLabel.x = 460;
   speedLabel.y = 310;
   speedLabel.size = 32;
   speedLabel.color = sf::Color::White;
