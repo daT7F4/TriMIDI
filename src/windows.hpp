@@ -16,9 +16,10 @@ uint64_t globalLength;
 uint16_t PPQN;
 uint64_t MIDITime;
 uint64_t lastMIDITime;
-uint64_t NotesPerSecond;
+uint16_t trackCount;
+int8_t transpose = 0;
 
-bool activeNotes[16][128];
+bool renderingNotes[16][128];
 bool mutedTracks[1024];
 
 int selectedFile = -1;
@@ -26,6 +27,8 @@ int selectedDevice = -1;
 
 bool seekT = false;
 bool playT = false;
+bool trackT = false;
+bool transT = false;
 bool playing = true;
 
 float Tempo;
@@ -66,7 +69,8 @@ void stopAllNotes(RtMidiOut &midiOut)
   {
     for (int j = 0; j < 16; j++)
     {
-      stopNote(midiOut, j, i);
+      stopNote(midiOut, j, i, 1);
+      renderingNotes[j][i] = false;
       activeNotes[j][i] = false;
     }
   }
@@ -163,7 +167,7 @@ int displaySelectionScreen()
     m = sf::Mouse::getPosition(select);
 
     start.mode = 1;
-    if (inside(1180, 1580, 10, 40))
+    if (inside(1180, 1580, 10, 40) && selectedDevice != -1 && selectedFile != -1)
     {
       start.mode = 2;
       if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
@@ -309,10 +313,12 @@ int displayPlayerScreen()
   play.x = 20;
   play.y = 310;
   play.scale = 4;
+  play.InitSprite(sf::IntRect(0, 98, 11, 11));
   Sprite stop;
   stop.x = 20;
   stop.y = 310;
   stop.scale = 4;
+  stop.InitSprite(sf::IntRect(12, 98, 11, 11));
 
   Rectangle note;
   note.w = 10;
@@ -324,8 +330,8 @@ int displayPlayerScreen()
   speed.scale = 4;
   speed.InitSprite(sf::IntRect(42, 98, 93, 11));
   Label speedLabel;
-  speedLabel.x = 80;
-  speedLabel.y = 360;
+  speedLabel.x = 180;
+  speedLabel.y = 310;
   speedLabel.size = 32;
   speedLabel.color = sf::Color::White;
   speedLabel.allign = "l";
@@ -345,6 +351,31 @@ int displayPlayerScreen()
   back.mode = 1;
   back.centerAllign = true;
   back.InitButton();
+
+  Button track;
+  track.w = 150;
+  track.h = 30;
+  track.Locked = sf::Color(80, 80, 80);
+  track.Open = sf::Color(140, 140, 140);
+  track.Hover = sf::Color(200, 200, 200);
+  track.centerAllign = true;
+
+  Sprite plus;
+  plus.x = 650;
+  plus.y = 210;
+  plus.scale = 4;
+  plus.InitSprite(sf::IntRect(136, 98, 11, 11));
+  Sprite minus;
+  minus.x = 500;
+  minus.y = 210;
+  minus.scale = 4;
+  minus.InitSprite(sf::IntRect(148, 98, 11, 11));
+  Label transposeLabel;
+  transposeLabel.x = 575;
+  transposeLabel.y = 210;
+  transposeLabel.allign = "c";
+  transposeLabel.size = 32;
+  transposeLabel.color = sf::Color::White;
 
   uint64_t actualNoteCount = 0;
   sf::RenderWindow window(sf::VideoMode(1600, 1000), "Player", sf::Style::Titlebar);
@@ -431,11 +462,12 @@ int displayPlayerScreen()
     {
       for (int j = 0; j < 128; j++)
       {
-        if (activeNotes[i][j])
+        if (renderingNotes[i][j])
         {
           note.x = 22 + (j * 12);
           note.y = 22 + (i * 12);
           note.color = midiColors[i];
+          note.color.a = 255 - ((renderingNotes[i][j] + activeNotes[i][j]) * 128);
           note.InitRect();
           note.DrawRect(window);
         }
@@ -453,12 +485,10 @@ int displayPlayerScreen()
 
     if (playing)
     {
-      stop.InitSprite(sf::IntRect(12, 98, 11, 11));
       stop.DrawSprite(window);
     }
     else
     {
-      play.InitSprite(sf::IntRect(0, 98, 11, 11));
       play.DrawSprite(window);
     }
 
@@ -502,6 +532,44 @@ int displayPlayerScreen()
     }
     back.DrawButton(window);
 
+    for (int i = 0; i < trackCount; i++)
+    {
+      track.x = ((i % 16) * 158) + 10;
+      track.y = ((i / 16) * 35) + 400;
+      track.LabelText = "Track #" + to_string(i);
+      track.mode = 1;
+      if (mutedTracks[i] == true)
+        track.mode = 0;
+      if (inside(track.x, track.x + 150, track.y, track.y + 30))
+      {
+        track.mode = 2;
+        if (sf::Mouse::isButtonPressed(sf::Mouse::Left) && !trackT)
+          mutedTracks[i] = !mutedTracks[i];
+        trackT = sf::Mouse::isButtonPressed(sf::Mouse::Left);
+      }
+      track.InitButton();
+      track.DrawButton(window);
+    }
+
+    /*
+    plus.DrawSprite(window);
+    minus.DrawSprite(window);
+    if(transpose > -1)
+      transposeLabel.text = "+" + to_string(transpose);
+    transposeLabel.InitText(thiccfont);
+    transposeLabel.DrawText(window);
+    if(inside(500, 544, 210, 254)){
+      if(sf::Mouse::isButtonPressed(sf::Mouse::Left) && !transT)
+        transpose--;
+      transT = sf::Mouse::isButtonPressed(sf::Mouse::Left);
+    }
+    if(inside(650, 694, 210, 254)){
+      if(sf::Mouse::isButtonPressed(sf::Mouse::Left) && !transT)
+        transpose++;
+      transT = sf::Mouse::isButtonPressed(sf::Mouse::Left);
+    }
+    */
+
     window.display();
 
     if (playing)
@@ -516,13 +584,20 @@ int displayPlayerScreen()
       uint16_t trackNumber = ((byte1 & 0x0F) << 7) | byte4 & 0b01111111;
       if (byte3 != 128)
       { // note event
-        if ((byte4 & 128) >> 7){
-          if(mutedTracks[trackNumber] == false)
+        if ((byte4 & 128) >> 7)
+        {
+          if (mutedTracks[trackNumber] == false)
+          {
             playNote(midiOut, channel, byte2, byte3);
-        }else{
-          stopNote(midiOut, channel, byte2);
+            activeNotes[channel][byte2] = true;
+          }
         }
-        activeNotes[channel][byte2] = (byte4 & 128) >> 7;
+        else
+        {
+          stopNote(midiOut, channel, byte2, 0);
+          activeNotes[channel][byte2] = false;
+        }
+        renderingNotes[channel][byte2] = (byte4 & 128) >> 7;
       }
       else if (byte3 == 128)
       {
@@ -533,7 +608,8 @@ int displayPlayerScreen()
     }
 
     sixtyfour2thridytwo(tempo[tempoIndex + 1]);
-    while(int1 < MIDITime && tempoIndex < tempo.size() - 1){
+    while (int1 < MIDITime && tempoIndex < tempo.size() - 1)
+    {
       tempoIndex++;
       sixtyfour2thridytwo(tempo[tempoIndex]);
     }

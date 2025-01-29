@@ -4,6 +4,8 @@ using namespace std;
 
 vector<string> MIDIDevices;
 
+bool activeNotes[16][128];
+
 void playNote(RtMidiOut &midiOut, int channel, int note, int velocity)
 {
 
@@ -15,13 +17,16 @@ void playNote(RtMidiOut &midiOut, int channel, int note, int velocity)
 }
 
 // Function to turn off a MIDI note on a specific channel
-void stopNote(RtMidiOut &midiOut, int channel, int note)
+void stopNote(RtMidiOut &midiOut, int channel, int note, bool force)
 {
-  vector<unsigned char> message;
-  message.push_back(0x80 | channel); // Note Off message for the channel
-  message.push_back(note);           // MIDI note number
-  message.push_back(0);              // Velocity (ignored for Note Off)
-  midiOut.sendMessage(&message);
+  if (activeNotes[channel][note] || force)
+  {
+    vector<unsigned char> message;
+    message.push_back(0x80 | channel); // Note Off message for the channel
+    message.push_back(note);           // MIDI note number
+    message.push_back(0);              // Velocity (ignored for Note Off)
+    midiOut.sendMessage(&message);
+  }
 }
 
 // Function to send a Program Change message

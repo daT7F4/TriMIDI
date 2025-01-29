@@ -80,9 +80,9 @@ void Sprite::InitSprite(sf::IntRect spriteRect){
   sprite.setTextureRect(spriteRect);
   sprite.setScale(sf::Vector2f(scale, scale));
   sprite.setPosition(sf::Vector2f(x, y));
-  sprite.setColor(color);
 }
 
 void Sprite::DrawSprite(sf::RenderWindow &window){
+  sprite.setColor(color);
   window.draw(sprite);
 }

@@ -5,9 +5,6 @@
 #include <cmath>
 #include <filesystem>
 
-#include <SFML/Graphics.hpp>
-#include <SFML/System.hpp>
-
 #include "windows.hpp"
 
 using namespace std;
@@ -18,7 +15,6 @@ uint8_t trackHeader[4] = {0x4D, 0x54, 0x72, 0x6B};
 
 int playingNotes;
 
-uint16_t trackCount;
 uint64_t totalSize;
 
 int main()
@@ -123,17 +119,18 @@ int main()
       trackIndex++;
     }
 
-   std::sort(midiData.begin(), midiData.end(), [](const uint64_t& a, const uint64_t& b) {
+    sort(midiData.begin(), midiData.end(), [](const uint64_t& a, const uint64_t& b) {
         return (a >> 32) < (b >> 32); // Compare upper 32 bits
     });
-    std::sort(tempo.begin(), tempo.end(), [](const uint64_t& a, const uint64_t& b) {
+    sort(tempo.begin(), tempo.end(), [](const uint64_t& a, const uint64_t& b) {
         return (a >> 32) < (b >> 32); // Compare upper 32 bits
     });
     midiData.shrink_to_fit();
     tempo.shrink_to_fit();
 
     cout << "Done decoding " << totalSize << " bytes" << endl;
-    cout << "Total allocated size is " << midiData.size() * 8 << " bytes" << endl;
+    cout << "Total allocated note data is " << midiData.size() * 8 << " bytes" << endl;
+    cout << "Total allocated tempo data is " << tempo.size() * 8 << " bytes" << endl;
 
     unsigned int nPorts = midiOut.getPortCount();
 

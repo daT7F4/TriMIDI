@@ -2,7 +2,7 @@
 
 using namespace std;
 
-#define BUFFER_SIZE 256
+#define BUFFER_SIZE 64
 uint8_t buffer[BUFFER_SIZE];
 uint8_t bufferIndex;
 
