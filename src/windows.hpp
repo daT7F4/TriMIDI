@@ -17,7 +17,6 @@ uint16_t PPQN;
 uint64_t MIDITime;
 uint64_t lastMIDITime;
 uint16_t trackCount;
-int8_t transpose = 0;
 
 bool renderingNotes[16][128];
 bool mutedTracks[1024];
@@ -69,7 +68,7 @@ void stopAllNotes(RtMidiOut &midiOut)
   {
     for (int j = 0; j < 16; j++)
     {
-      stopNote(midiOut, j, i, 1);
+      stopNote(midiOut, j, i, 0);
       renderingNotes[j][i] = false;
       activeNotes[j][i] = false;
     }
@@ -94,7 +93,7 @@ int displaySelectionScreen()
   version.x = 330;
   version.y = 5;
   version.size = 20;
-  version.text = "v.1.5.1";
+  version.text = "v.1.5.2";
   version.color = sf::Color::White;
   version.InitText(font);
 
@@ -125,6 +124,7 @@ int displaySelectionScreen()
   selection.Locked = sf::Color(0, 0, 100);
   selection.Open = sf::Color(0, 0, 150);
   selection.Hover = sf::Color(0, 0, 200);
+  selection.centerAllign = false;
 
   Label selectionError;
   selectionError.color = sf::Color::White;
@@ -362,17 +362,17 @@ int displayPlayerScreen()
 
   Sprite plus;
   plus.x = 650;
-  plus.y = 210;
-  plus.scale = 4;
+  plus.y = 217;
+  plus.scale = 3;
   plus.InitSprite(sf::IntRect(136, 98, 11, 11));
   Sprite minus;
   minus.x = 500;
-  minus.y = 210;
-  minus.scale = 4;
+  minus.y = 217;
+  minus.scale = 3;
   minus.InitSprite(sf::IntRect(148, 98, 11, 11));
   Label transposeLabel;
-  transposeLabel.x = 575;
-  transposeLabel.y = 210;
+  transposeLabel.x = 585;
+  transposeLabel.y = 213;
   transposeLabel.allign = "c";
   transposeLabel.size = 32;
   transposeLabel.color = sf::Color::White;
@@ -551,24 +551,31 @@ int displayPlayerScreen()
       track.DrawButton(window);
     }
 
-    /*
     plus.DrawSprite(window);
     minus.DrawSprite(window);
-    if(transpose > -1)
+    transposeLabel.text = to_string(transpose);
+    if (transpose > -1)
       transposeLabel.text = "+" + to_string(transpose);
     transposeLabel.InitText(thiccfont);
     transposeLabel.DrawText(window);
-    if(inside(500, 544, 210, 254)){
-      if(sf::Mouse::isButtonPressed(sf::Mouse::Left) && !transT)
+    if (inside(500, 544, 210, 254))
+    {
+      if (sf::Mouse::isButtonPressed(sf::Mouse::Left) && !transT && transpose > -24)
+      {
+        stopAllNotes(midiOut);
         transpose--;
+      }
       transT = sf::Mouse::isButtonPressed(sf::Mouse::Left);
     }
-    if(inside(650, 694, 210, 254)){
-      if(sf::Mouse::isButtonPressed(sf::Mouse::Left) && !transT)
+    if (inside(650, 694, 210, 254))
+    {
+      if (sf::Mouse::isButtonPressed(sf::Mouse::Left) && !transT && transpose < 24)
+      {
+        stopAllNotes(midiOut);
         transpose++;
+      }
       transT = sf::Mouse::isButtonPressed(sf::Mouse::Left);
     }
-    */
 
     window.display();
 

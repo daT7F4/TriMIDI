@@ -5,37 +5,44 @@ using namespace std;
 vector<string> MIDIDevices;
 
 bool activeNotes[16][128];
+int8_t transpose;
 
 void playNote(RtMidiOut &midiOut, int channel, int note, int velocity)
 {
-
-  vector<unsigned char> message;
-  message.push_back(0x90 | channel); // Note On message for the channel
-  message.push_back(note);           // MIDI note number
-  message.push_back(velocity);       // Velocity
-  midiOut.sendMessage(&message);
-}
-
-// Function to turn off a MIDI note on a specific channel
-void stopNote(RtMidiOut &midiOut, int channel, int note, bool force)
-{
-  if (activeNotes[channel][note] || force)
+  if (channel != 9)
+    note += transpose;
+  if (note > -1 && note < 128)
   {
     vector<unsigned char> message;
-    message.push_back(0x80 | channel); // Note Off message for the channel
-    message.push_back(note);           // MIDI note number
-    message.push_back(0);              // Velocity (ignored for Note Off)
+    message.push_back(0x90 | channel);
+    message.push_back(note);
+    message.push_back(velocity);
     midiOut.sendMessage(&message);
   }
 }
 
-// Function to send a Program Change message
+void stopNote(RtMidiOut &midiOut, int channel, int note, bool force)
+{
+  if (channel != 9)
+    note += transpose;
+  if (note > -1 && note < 128)
+  {
+    if (activeNotes[channel][note - (transpose * (channel != 9))] || force)
+    {
+      vector<unsigned char> message;
+      message.push_back(0x80 | channel);
+      message.push_back(note);
+      message.push_back(0);
+      midiOut.sendMessage(&message);
+    }
+  }
+}
+
 void sendProgramChange(RtMidiOut &midiOut, unsigned char channel, unsigned char programNumber)
 {
   unsigned char status = 0xC0 | channel;
   vector<unsigned char> message = {status, programNumber};
   midiOut.sendMessage(&message);
-  // cout << "Program changed to " << (int)programNumber << " on channel " << (int)(channel + 1) << endl;
 }
 
 void listMidiDevices()
@@ -45,7 +52,6 @@ void listMidiDevices()
     RtMidiOut midiOut;
     MIDIDevices.clear();
 
-    // List output devices
     cout << "\nMIDI Output Devices:" << endl;
     unsigned int nOutputPorts = midiOut.getPortCount();
     for (unsigned int i = 0; i < nOutputPorts; ++i)
@@ -53,7 +59,6 @@ void listMidiDevices()
       try
       {
         string portName = midiOut.getPortName(i);
-        // cout << i << ": " << portName << endl;
         MIDIDevices.push_back(portName);
       }
       catch (RtMidiError &error)
