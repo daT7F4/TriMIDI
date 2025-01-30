@@ -77,7 +77,7 @@ void stopAllNotes(RtMidiOut &midiOut)
 
 int displaySelectionScreen()
 {
-  font.loadFromFile("./assets/SourceCodePro-light.ttf");
+  font.loadFromFile("./assets/SourceCodePro-Light.ttf");
   thiccfont.loadFromFile("./assets/SourceCodePro-Black.ttf");
   if (!texture.loadFromFile("./assets/texture.png"))
     cerr << "Failed to load texture" << endl;
