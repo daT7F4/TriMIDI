@@ -411,7 +411,7 @@ int displayPlayerScreen()
     background.DrawRect(window);
     grid.DrawSprite(window);
 
-    bpm.text = to_string((int)Tempo) + " BPM (" + to_string((int)Tempo * speeds[speedIndex]) + ")";
+    bpm.text = to_string((int)Tempo) + " BPM (" + to_string((int)((int)Tempo * speeds[speedIndex])) + ")";
     bpm.InitText(font);
     bpm.DrawText(window);
 
@@ -445,12 +445,12 @@ int displayPlayerScreen()
           sixtyfour2thridytwo(midiData[globalIndex]);
         }
         sixtyfour2thridytwo(tempo[tempoIndex]);
-        while (int1 < MIDITime)
+        while (int1 < MIDITime && tempoIndex < tempo.size() - 1)
         {
           tempoIndex++;
           sixtyfour2thridytwo(tempo[tempoIndex]);
         }
-        while (int1 > MIDITime)
+        while (int1 > MIDITime && tempoIndex > 0)
         {
           tempoIndex--;
           sixtyfour2thridytwo(tempo[tempoIndex]);
