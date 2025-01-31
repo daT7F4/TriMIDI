@@ -5,6 +5,7 @@ using namespace std;
 vector<string> MIDIDevices;
 
 bool activeNotes[16][128];
+uint8_t tracks[16][128];
 int8_t transpose;
 
 void playNote(RtMidiOut &midiOut, int channel, int note, int velocity)

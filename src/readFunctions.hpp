@@ -46,6 +46,7 @@ uint32_t eight2twentyfour(uint8_t b1, uint8_t b2, uint8_t b3) { return b1 << 16 
 uint32_t eight2thirtytwo(uint8_t b1, uint8_t b2, uint8_t b3, uint8_t b4){return b1 << 24 | b2 << 16 | b3 << 8 | b4;}
 void eight2four(uint8_t val){byte1 = val & 0xF0; byte2 = val & 0x0F;}
 uint8_t four2eight(uint8_t b1, uint8_t b2){return b1 << 4 | b2;}
+uint16_t getTrackNumber(){return ((byte1 & 0x0F) << 7) | byte4 & 0b01111111;}
 
 void thirdytwo2eight(uint32_t value)
 {

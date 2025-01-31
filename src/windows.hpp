@@ -33,29 +33,29 @@ bool playing = true;
 float Tempo;
 double FPS = 60.0;
 
-sf::Color midiColors[16] = {
-    sf::Color(255, 87, 34),  // Red-Orange
-    sf::Color(76, 175, 80),  // Green
-    sf::Color(33, 150, 243), // Blue
-    sf::Color(255, 235, 59), // Yellow
-    sf::Color(156, 39, 176), // Purple
-    sf::Color(244, 67, 54),  // Red
-    sf::Color(0, 188, 212),  // Cyan
-    sf::Color(205, 220, 57), // Lime
-    sf::Color(121, 85, 72),  // Brown
-    sf::Color(255, 193, 7),  // Amber
-    sf::Color(63, 81, 181),  // Indigo
-    sf::Color(139, 195, 74), // Light Green
-    sf::Color(255, 152, 0),  // Orange
-    sf::Color(103, 58, 183), // Deep Purple
-    sf::Color(96, 125, 139), // Blue Grey
-    sf::Color(233, 30, 99)   // Pink
+sf::Color midiColors[12] = {
+    sf::Color(255, 0, 0),
+    sf::Color(255, 127, 0),
+    sf::Color(127, 127, 0),
+    sf::Color(127, 255, 0),
+    sf::Color(0, 255, 0),
+    sf::Color(0, 255, 127),
+    sf::Color(0, 127, 127),
+    sf::Color(0, 127, 255),
+    sf::Color(0, 0, 255),
+    sf::Color(127, 0, 255),
+    sf::Color(127, 0, 127),
+    sf::Color(255, 0, 127)
 };
 
 float speeds[8] = {0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2};
 string speedNames[8] = {"0.25x", "0.5x", "0.75x", "1x", "1.25x", "1.5x", "1.75x", "2x"};
 int speedX[9] = {124, 164, 205, 247, 286, 326, 367, 407, 448};
 int speedIndex = 3;
+
+sf::Color brigthness(sf::Color in, float bright){
+  return sf::Color(in.r * bright, in.g * bright, in.b * bright);
+}
 
 bool inside(int x1, int x2, int y1, int y2)
 {
@@ -93,7 +93,7 @@ int displaySelectionScreen()
   version.x = 330;
   version.y = 5;
   version.size = 20;
-  version.text = "v.1.5.3";
+  version.text = "v.1.5.3.1";
   version.color = sf::Color::White;
   version.InitText(font);
 
@@ -466,7 +466,7 @@ int displayPlayerScreen()
         {
           note.x = 22 + (j * 12);
           note.y = 22 + (i * 12);
-          note.color = midiColors[i];
+          note.color = midiColors[tracks[i][j] % 12];
           note.color.a = 255 - ((renderingNotes[i][j] + activeNotes[i][j]) * 128);
           note.InitRect();
           note.DrawRect(window);
@@ -538,8 +538,14 @@ int displayPlayerScreen()
       track.y = ((i / 10) * 35) + 400;
       track.LabelText = "Track #" + to_string(i);
       track.mode = 1;
-      if (mutedTracks[i] == true)
+      track.Hover = brigthness(midiColors[i % 12], 0.8);
+      track.Open = brigthness(midiColors[i % 12], 0.6);
+      track.Locked = brigthness(midiColors[i % 12], 0.5);
+      if (mutedTracks[i] == true){
         track.mode = 0;
+        track.LabelText = "L Track #" + to_string(i);
+        track.InitButton();
+      }
       if (inside(track.x, track.x + 150, track.y, track.y + 30))
       {
         track.mode = 2;
@@ -588,7 +594,7 @@ int displayPlayerScreen()
     {
       thirdytwo2eight(int2);
       uint8_t channel = (byte1 & 0xF0) >> 4;
-      uint16_t trackNumber = ((byte1 & 0x0F) << 7) | byte4 & 0b01111111;
+      uint16_t trackNumber = getTrackNumber();
       if (byte3 != 128)
       { // note event
         if ((byte4 & 128) >> 7)
@@ -598,6 +604,7 @@ int displayPlayerScreen()
             playNote(midiOut, channel, byte2, byte3);
             activeNotes[channel][byte2] = true;
           }
+          tracks[channel][byte2] = trackNumber;
         }
         else
         {
