@@ -53,6 +53,7 @@ int main()
     globalIndex = 0;
     tempoIndex = 0;
     lastMIDITime = 0;
+    readBytes = 0;
     for (int i = 0; i < 128; i++)
     {
       for (int j = 0; j < 16; j++)
@@ -84,6 +85,7 @@ int main()
     PPQN = eight2sixteen(get(rI), get(rI + 1));
     cout << "PPQN: " << PPQN << endl;
     rI += 2; readNextByte(file, 2);
+    readBytes = 14;
     trackIndex = 0;
     for (int track = 0; track < trackCount; track++)
     {
@@ -96,10 +98,12 @@ int main()
           cerr << "Got 0x" << hex << get((rI + i) % BUFFER_SIZE) << endl;
           return 1;
         }
+        readBytes++;
       }
       rI += 4; readNextByte(file, 4);
       uint32_t trackLenght =
           eight2thirtytwo(get(rI), get(rI + 1), get(rI + 2), get(rI + 3));
+      readBytes += 4;
       cout << "Track #" << track << ", Size: " << trackLenght << " bytes" << endl;
       totalSize += trackLenght;
       rI += 4; readNextByte(file, 4);
@@ -131,6 +135,8 @@ int main()
     cout << "Done decoding " << totalSize << " bytes" << endl;
     cout << "Total allocated note data is " << midiData.size() * 8 << " bytes" << endl;
     cout << "Total allocated tempo data is " << tempo.size() * 8 << " bytes" << endl;
+    int ratio = ((float)readBytes / (float)totalSize) * 100.0;
+    cout << "Total of " << readBytes << " bytes was read (" << to_string(ratio) << "%)" << endl;
 
     unsigned int nPorts = midiOut.getPortCount();
 

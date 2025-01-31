@@ -51,8 +51,6 @@ void listMidiDevices()
   {
     RtMidiOut midiOut;
     MIDIDevices.clear();
-
-    cout << "\nMIDI Output Devices:" << endl;
     unsigned int nOutputPorts = midiOut.getPortCount();
     for (unsigned int i = 0; i < nOutputPorts; ++i)
     {

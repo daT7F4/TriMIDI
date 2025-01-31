@@ -93,7 +93,7 @@ int displaySelectionScreen()
   version.x = 330;
   version.y = 5;
   version.size = 20;
-  version.text = "v.1.5.2.1";
+  version.text = "v.1.5.3";
   version.color = sf::Color::White;
   version.InitText(font);
 
@@ -534,8 +534,8 @@ int displayPlayerScreen()
 
     for (int i = 0; i < trackCount; i++)
     {
-      track.x = ((i % 16) * 158) + 10;
-      track.y = ((i / 16) * 35) + 400;
+      track.x = ((i % 10) * 158) + 10;
+      track.y = ((i / 10) * 35) + 400;
       track.LabelText = "Track #" + to_string(i);
       track.mode = 1;
       if (mutedTracks[i] == true)

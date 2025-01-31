@@ -2,7 +2,7 @@
 
 using namespace std;
 
-#define BUFFER_SIZE 64
+#define BUFFER_SIZE 32
 uint8_t buffer[BUFFER_SIZE];
 uint8_t bufferIndex;
 
@@ -17,6 +17,7 @@ vector<uint64_t> tempo; // (tiemstamp, tempo)
 uint64_t rI;
 uint64_t trackIndex;
 uint64_t trackTime;
+uint64_t readBytes;
 uint8_t eventType;
 uint8_t channel;
 uint8_t byte1, byte2, byte3, byte4;
@@ -59,10 +60,10 @@ void readDelta()
   while (get(rI) > 127)
   {
     delta = delta << 7 | (get(rI) & 127);
-    rI++; readNextByte(file, 1);
+    rI++; readNextByte(file, 1); readBytes++;
   }
   delta = delta << 7 | (get(rI) & 127);
-  rI++; readNextByte(file, 1);
+  rI++; readNextByte(file, 1); readBytes++;
   trackTime += delta;
 }
 
@@ -73,6 +74,7 @@ void readMeta()
   {
   case 0x51:
     tempo.push_back(thirdytwo2sixtyfour(trackTime, eight2thirtytwo(get(rI + 2), get(rI + 3), get(rI + 4), 0)));
+    readBytes += 3;
     break;
   }
   rI++; readNextByte(file, 1);
@@ -87,13 +89,13 @@ void readEvent()
   {
     eventType = (get(rI) & 0xF0) >> 4;
     channel = get(rI) & 0x0F;
-    rI++; readNextByte(file, 1);
+    rI++; readNextByte(file, 1); readBytes++;
   }
   switch (eventType)
   {
   case 0b1000: // note off
     midiData.push_back(thirdytwo2sixtyfour(trackTime, eight2thirtytwo(four2eight(channel, trackIndex >> 7), get(rI), get(rI + 1), trackIndex & 0b01111111)));
-    rI += 2; readNextByte(file, 2);
+    rI += 2; readNextByte(file, 2); readBytes += 2;
     break;
   case 0b1001: // note on
     if (get(rI + 1) == 0)
@@ -104,7 +106,7 @@ void readEvent()
     {
       midiData.push_back(thirdytwo2sixtyfour(trackTime, eight2thirtytwo(four2eight(channel, trackIndex >> 7), get(rI), get(rI + 1), (trackIndex & 0b01111111) + 128)));
     }
-    rI += 2; readNextByte(file, 2);
+    rI += 2; readNextByte(file, 2); readBytes += 2;
     break;
   case 0b1010: // aftertouch
     rI += 2; readNextByte(file, 2);
@@ -114,7 +116,7 @@ void readEvent()
     break;
   case 0b1100: // program change
     midiData.push_back(thirdytwo2sixtyfour(trackTime, eight2thirtytwo(four2eight(channel, trackIndex >> 7), get(rI), 128, trackIndex & 0b01111111)));
-    rI += 1; readNextByte(file, 1);
+    rI += 1; readNextByte(file, 1); readBytes++;
     break;
   case 0b1101: // channel pressure
     rI += 1; readNextByte(file, 1);
