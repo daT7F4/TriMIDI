@@ -1,3 +1,5 @@
+cmake_policy(SET CMP0002 NEW)
+
 cmake_minimum_required(VERSION 3.21)
 project(main LANGUAGES CXX)
 include(FetchContent)
@@ -11,6 +13,11 @@ FetchContent_Declare(RtMidi
     GIT_REPOSITORY https://github.com/thestk/rtmidi.git
     GIT_TAG master)
 FetchContent_MakeAvailable(RtMidi)
+
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(FLUIDSYNTH REQUIRED fluidsynth)
+
+find_package(FluidSynth QUIET REQUIRED)
 
 set(RTMIDI_TARGET_NAME "rtmidi")
 if(TARGET ${RTMIDI_TARGET_NAME})
@@ -32,6 +39,10 @@ target_link_libraries(TriMIDI PRIVATE
 )
 
 target_link_libraries(TriMIDI PRIVATE rtmidi)
+if (FluidSynth_FOUND)
+  message(STATUS "Found FluidSynth, version: ${FluidSynth_VERSION}")
+  target_link_libraries ( TriMIDI PRIVATE FluidSynth::libfluidsynth )
+endif ()
 
 target_compile_features(TriMIDI PRIVATE cxx_std_17)
 

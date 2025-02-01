@@ -29,6 +29,7 @@ bool playT = false;
 bool trackT = false;
 bool transT = false;
 bool playing = true;
+bool internalSynth = false;
 
 float Tempo;
 double FPS = 60.0;
@@ -75,6 +76,16 @@ void stopAllNotes(RtMidiOut &midiOut)
   }
 }
 
+void stopAllSynthNotes(){
+  for(int i = 0; i < 128; i++){
+    for(int j = 0; j < 16; j++){
+      stopSynthNote(i, j, 0);
+      renderingNotes[j][i] = false;
+      activeNotes[j][i] = false;
+    }
+  }
+}
+
 int displaySelectionScreen()
 {
   font.loadFromFile("./assets/SourceCodePro-Light.ttf");
@@ -93,7 +104,7 @@ int displaySelectionScreen()
   version.x = 330;
   version.y = 5;
   version.size = 20;
-  version.text = "v.1.5.3.1";
+  version.text = "v.1.5.4";
   version.color = sf::Color::White;
   version.InitText(font);
 
@@ -272,6 +283,8 @@ int displaySelectionScreen()
 
 int displayPlayerScreen()
 {
+  initSynth();
+
   Rectangle background;
   background.x = 10;
   background.y = 10;
@@ -601,21 +614,30 @@ int displayPlayerScreen()
         {
           if (mutedTracks[trackNumber] == false)
           {
-            playNote(midiOut, channel, byte2, byte3);
+            if(internalSynth)
+              playSynthNote(byte2, channel, byte3);
+            else
+              playNote(midiOut, channel, byte2, byte3);
             activeNotes[channel][byte2] = true;
           }
           tracks[channel][byte2] = trackNumber;
         }
         else
         {
-          stopNote(midiOut, channel, byte2, 0);
+          if(internalSynth)
+            stopSynthNote(byte2, channel, 0);
+          else 
+            stopNote(midiOut, channel, byte2, 0);
           activeNotes[channel][byte2] = false;
         }
         renderingNotes[channel][byte2] = (byte4 & 128) >> 7;
       }
       else if (byte3 == 128)
       {
-        sendProgramChange(midiOut, channel, byte2);
+        if(internalSynth)
+          setSynthProgramChange(channel, byte2, channel == 9);
+        else 
+          sendProgramChange(midiOut, channel, byte2);
       }
       globalIndex++;
       sixtyfour2thridytwo(midiData[globalIndex]);
@@ -636,6 +658,9 @@ int displayPlayerScreen()
     if (FPS < 10.0)
       FPS = 60.0;
   }
-  stopAllNotes(midiOut);
+  if(internalSynth)
+    stopAllSynthNotes();
+  else 
+    stopAllNotes(midiOut);
   return 0;
 }

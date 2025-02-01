@@ -140,7 +140,11 @@ int main()
 
     unsigned int nPorts = midiOut.getPortCount();
 
-    midiOut.openPort(selectedDevice);
+    internalSynth = false;
+    if(selectedDevice > 0)
+      midiOut.openPort(selectedDevice - 1);
+    else
+      internalSynth = true;
 
     sixtyfour2thridytwo(tempo[0]);
     thirdytwo2eight(int2);
@@ -155,7 +159,8 @@ int main()
 
     stopAllNotes(midiOut);
 
-    midiOut.closePort();
+    if(!internalSynth)
+      midiOut.closePort();
   }
 
   return 0;
