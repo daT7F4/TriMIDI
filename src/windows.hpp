@@ -175,7 +175,10 @@ int displaySelectionScreen()
 
     select.clear();
 
-    m = sf::Mouse::getPosition(select);
+    if(select.hasFocus())
+      m = sf::Mouse::getPosition(select);
+    else
+      m = sf::Vector2i(0,0);
 
     start.mode = 1;
     if (inside(1180, 1580, 10, 40) && selectedDevice != -1 && selectedFile != -1)
@@ -417,7 +420,10 @@ int displayPlayerScreen()
       return 0;
     }
 
-    m = sf::Mouse::getPosition(window);
+    if(window.hasFocus())
+      m = sf::Mouse::getPosition(window);
+    else
+      m = sf::Vector2i(0,0);
 
     window.clear();
 
@@ -442,8 +448,12 @@ int displayPlayerScreen()
     {
       if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
       {
-        if (!seekT)
-          stopAllNotes(midiOut);
+        if (!seekT){
+          if(internalSynth)
+            stopAllSynthNotes();
+          else
+            stopAllNotes(midiOut);
+        }
         playing = false;
         MIDITime = (float)(m.x - 10) / (float)step;
         sixtyfour2thridytwo(midiData[globalIndex]);
@@ -658,9 +668,5 @@ int displayPlayerScreen()
     if (FPS < 10.0)
       FPS = 60.0;
   }
-  if(internalSynth)
-    stopAllSynthNotes();
-  else 
-    stopAllNotes(midiOut);
   return 0;
 }

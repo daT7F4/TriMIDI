@@ -44,3 +44,4 @@ make install-deps
 * libxrandr-dev
 * libxcursor-dev
 * libfreetype6-dev
+* libfluidsynth-dev

@@ -140,15 +140,26 @@ int main()
 
     unsigned int nPorts = midiOut.getPortCount();
 
+    cout << "Synth setup";
+
     internalSynth = false;
+    cout << ".";
     if(selectedDevice > 0)
       midiOut.openPort(selectedDevice - 1);
     else
       internalSynth = true;
+    cout << "." << endl;
+    
+    cout << "Tempo set";
 
     sixtyfour2thridytwo(tempo[0]);
+    cout << ".";
     thirdytwo2eight(int2);
+    cout << ".";
     Tempo = 60000000.0 / eight2twentyfour(byte1, byte2, byte3);
+    cout << "." << endl;
+
+    cout << "Opening window" << endl;
 
     globalIndex = 0;
 
@@ -157,7 +168,10 @@ int main()
     if (displayPlayerScreen() == 0)
       return 0;
 
-    stopAllNotes(midiOut);
+    if(internalSynth)
+      stopAllSynthNotes();
+    else 
+      stopAllNotes(midiOut);
 
     if(!internalSynth)
       midiOut.closePort();
