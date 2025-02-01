@@ -591,7 +591,10 @@ int displayPlayerScreen()
     {
       if (sf::Mouse::isButtonPressed(sf::Mouse::Left) && !transT && transpose > -24)
       {
-        stopAllNotes(midiOut);
+        if(internal)
+          stopAllSynthNotes();
+        else
+          stopAllNotes(midiOut);
         transpose--;
       }
       transT = sf::Mouse::isButtonPressed(sf::Mouse::Left);
@@ -600,7 +603,10 @@ int displayPlayerScreen()
     {
       if (sf::Mouse::isButtonPressed(sf::Mouse::Left) && !transT && transpose < 24)
       {
-        stopAllNotes(midiOut);
+        if(internal)
+          stopAllSynthNotes();
+        else
+          stopAllNotes(midiOut);
         transpose++;
       }
       transT = sf::Mouse::isButtonPressed(sf::Mouse::Left);

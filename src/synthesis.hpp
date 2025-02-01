@@ -60,6 +60,7 @@ void initSynth()
   }
 
   selectBestAudioDriver(settings);
+  cout << endl;
 
   synth = new_fluid_synth(settings);
   if (!synth)
