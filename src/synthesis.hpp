@@ -12,7 +12,43 @@ int8_t transpose;
 fluid_settings_t *settings;
 fluid_synth_t *synth;
 fluid_audio_driver_t *adriver;
-int sfont_id;
+int sfont_id = -1;
+
+vector<string> available_drivers;
+
+void collectAvailableDrivers(void* data, const char* name, const char* option) {
+    vector<string>* drivers = static_cast<vector<string>*>(data);
+    drivers->push_back(option);
+}
+
+void selectBestAudioDriver(fluid_settings_t* settings) {
+    const char* preferred_drivers[] = {"pulseaudio", "alsa", "jack", "oss", "coreaudio", "dsound"};
+
+    available_drivers.clear();
+    fluid_settings_foreach_option(settings, "audio.driver", &available_drivers, collectAvailableDrivers);
+
+    cout << "Available audio drivers: ";
+    for (const auto& driver : available_drivers) {
+        cout << driver << ", ";
+    }
+    cout << endl;
+
+    for (const char* driver : preferred_drivers) {
+        if (find(available_drivers.begin(), available_drivers.end(), driver) != available_drivers.end()) {
+            cout << "Using audio driver: " << driver << endl;
+            fluid_settings_setstr(settings, "audio.driver", driver);
+            return;
+        }
+    }
+
+    if (!available_drivers.empty()) {
+        cout << "Using fallback audio driver: " << available_drivers[0] << endl;
+        fluid_settings_setstr(settings, "audio.driver", available_drivers[0].c_str());
+    } else {
+        cerr << "No audio driver available!" << endl;
+    }
+    cout << endl;
+}
 
 void initSynth()
 {
@@ -22,6 +58,8 @@ void initSynth()
     cerr << "Failed to create FluidSynth settings" << endl;
     return;
   }
+
+  selectBestAudioDriver(settings);
 
   synth = new_fluid_synth(settings);
   if (!synth)

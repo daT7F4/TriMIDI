@@ -104,7 +104,7 @@ int displaySelectionScreen()
   version.x = 330;
   version.y = 5;
   version.size = 20;
-  version.text = "v.1.5.4";
+  version.text = "v.1.5.5";
   version.color = sf::Color::White;
   version.InitText(font);
 
