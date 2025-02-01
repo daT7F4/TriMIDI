@@ -14,33 +14,59 @@ fluid_synth_t *synth;
 fluid_audio_driver_t *adriver;
 int sfont_id;
 
-void initSynth(){
+void initSynth()
+{
   settings = new_fluid_settings();
+  if (!settings)
+  {
+    cerr << "Failed to create FluidSynth settings" << endl;
+    return;
+  }
+
   synth = new_fluid_synth(settings);
+  if (!synth)
+  {
+    cerr << "Failed to create FluidSynth synth" << endl;
+    delete_fluid_settings(settings);
+    return;
+  }
+
   adriver = new_fluid_audio_driver(settings, synth);
-  const char* soundfont_path = "./assets/weedsgm3.sf2";
+  if (!adriver)
+  {
+    cerr << "Failed to create FluidSynth audio driver" << endl;
+    delete_fluid_synth(synth);
+    delete_fluid_settings(settings);
+    return;
+  }
+
+  const char *soundfont_path = "./assets/weedsgm3.sf2";
   sfont_id = fluid_synth_sfload(synth, soundfont_path, 1);
-    if (sfont_id == -1) {
-        cerr << "Failed to load SoundFont: " << soundfont_path << endl;
-    }
-    cout << "Loaded SoundFont: " << soundfont_path << endl;
+  if (sfont_id == -1)
+  {
+    cerr << "Failed to load SoundFont: " << soundfont_path << endl;
+  }
+  cout << "Loaded SoundFont: " << soundfont_path << endl;
 }
 
-void playSynthNote(int note, int channel, int velocity) {
+void playSynthNote(int note, int channel, int velocity)
+{
   if (channel != 9)
     note += transpose;
-  if(note > -1 && note < 128)
+  if (note > -1 && note < 128)
     fluid_synth_noteon(synth, channel, note, velocity);
 }
 
-void stopSynthNote(int note, int channel, bool force) {
+void stopSynthNote(int note, int channel, bool force)
+{
   if (channel != 9)
     note += transpose;
-  if((note > -1 && note < 128) && (activeNotes[channel][note - (transpose * (channel != 9))] || force))
+  if ((note > -1 && note < 128) && (activeNotes[channel][note - (transpose * (channel != 9))] || force))
     fluid_synth_noteoff(synth, channel, note);
 }
 
-void setSynthProgramChange(int channel, int program, bool drums){
+void setSynthProgramChange(int channel, int program, bool drums)
+{
   fluid_synth_program_select(synth, channel, sfont_id, drums * 128, program);
 }
 
